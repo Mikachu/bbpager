@@ -92,8 +92,8 @@ void WMInterface::updateWindowStack()
     if (netwm->readClientListStacking(bbtool->getCurrentScreenInfo()->rootWindow(), window_vect)) {
         // some check to see if we need update
         PagerWindow *pwindow;
-        bt::Netwm::WindowList::reverse_iterator it = window_vect.rbegin();
-        bt::Netwm::WindowList::reverse_iterator it_end = window_vect.rend();
+        bt::Netwm::WindowList::iterator it = window_vect.begin();
+        bt::Netwm::WindowList::iterator it_end = window_vect.end();
         for (; it != it_end; it++) {
             pwindow = bbtool->findPagerWindow((*it));
             if ( pwindow == NULL) continue;
