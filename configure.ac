@@ -1,9 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(bbmail.cc)
-
+AC_INIT(src/bbpager.cxx)
 AM_INIT_AUTOMAKE(bbpager, 0.4.0)
 
 AC_PREFIX_DEFAULT(/usr/local)
+
+AM_MAINTAINER_MODE
 
 dnl get the debug values right
 AC_DEFUN(AC_SET_DEBUG,
@@ -19,7 +20,7 @@ AC_DEFUN(AC_SET_NODEBUG,
 ])
       
 
-AC_ARG_ENABLE(debug,[  --enable-debug	create debugging code [default=no]],
+AC_ARG_ENABLE(debug,[  --enable-debug          create debugging code [default=no]],
 [
 if test $enableval = "no";
  then AC_SET_NODEBUG
@@ -34,7 +35,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CPP
 AC_PROG_INSTALL
-
+AC_PROG_RANLIB
 AC_HEADER_STDC
 AC_CHECK_HEADERS(ctype.h fcntl.h libgen.h locale.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/stat.h sys/time.h sys/types.h sys/wait.h)
 AC_HEADER_TIME
@@ -65,61 +66,10 @@ AC_STRUCT_TM
 dnl Checks for library functions.
 AC_CHECK_FUNCS(select strstr)
 
-
-dnl check for blackbox headers
-blackbox_inc=""
-AC_MSG_CHECKING([for blackbox headers])
-AC_ARG_WITH(bt-includes,
-        AC_HELP_STRING([--with-bt-includes], [blackbox library headers]),
-        ac_blackbox_inc=$withval, ac_blackbox_inc="")
-
-# if the blackbox headers directory was specified, make sure we have it
-for btdir in $ac_blackbox_inc /usr/local /usr/lib /usr; do
-    if test -f "$btdir/Application.hh"; then
-       blackbox_inc=$btdir
-       break
-    fi
-done
-
-if test -z "$blackbox_inc"; then
-   AC_MSG_RESULT([Not found])
-   echo 
-   echo "Couldn't find your blackbox library headers."
-   echo "Use --with-bt-includes=dir option to fix this."
-   echo 
-   exit 1
-fi
-
-AC_MSG_RESULT([$blackbox_inc])
-CXXFLAGS="$CXXFLAGS -I$blackbox_inc"
-
-
-dnl now check for blackbox library
-blackbox_lib=""
-AC_MSG_CHECKING([for blackbox lib])
-AC_ARG_WITH(bt-lib,
-        AC_HELP_STRING([--with-bt-lib], [blackbox library]),
-        ac_blackbox_lib=$withval, ac_blackbox_lib="")
-
-# if the blackbox headers directory was specified, make sure we have it
-for btdir in $ac_blackbox_lib /usr/local /usr/lib /usr; do
-    if test -f "$btdir/libbt.a"; then
-       blackbox_lib=$btdir
-       break
-    fi
-done
-
-if test -z "$blackbox_lib"; then
-   AC_MSG_RESULT([Not found])
-   echo 
-   echo "Couldn't find your blackbox library."
-   echo "Use --with-bt-lib=dir option to fix this."
-   echo 
-   exit 1
-fi
-
-AC_MSG_RESULT([$blackbox_lib])
-LIBS="$LIBS -L$blackbox_lib -lbt"
+dnl pkgconfig checks for blackbox library
+PKG_CHECK_MODULES(LIBBT, libbt)
+CXXFLAGS="$CXXFLAGS $LIBBT_CFLAGS"
+LIBS="$LIBS $LIBBT_LIBS"
 
 dnl generate the config header
 AM_CONFIG_HEADER(config.h) 
@@ -134,4 +84,8 @@ AC_MSG_RESULT([Building with '$CXXFLAGS' for C++ compiler flags.])
 AC_MSG_RESULT([Building with '$LIBS' for linker flags.])
 AC_MSG_RESULT([])
 
-AC_OUTPUT(Makefile data/Makefile scripts/Makefile)
+AC_OUTPUT(
+Makefile 
+src/Makefile 
+data/Makefile 
+)
