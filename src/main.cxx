@@ -21,10 +21,7 @@
 
 #include "bbpager.h"
 #include "main.h"
-#include "i18n.hh"
 #include "config.h"
-
-bt::I18n bt::i18n; // initialized in main
 
 Configuration::Configuration(int iargc, char **iargv)
 {
@@ -95,7 +92,6 @@ int main(int argc,char **argv)
 			options.setDecorated(true);
 		}
 	}
-
 	ToolWindow bbpager(options);
 	bbpager.run();
 }
