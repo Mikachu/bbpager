@@ -191,11 +191,9 @@ void DesktopWindow::buttonPressEvent(const XButtonEvent * const event)
             grabbed_x = x() + pager->x() - event->x;
             grabbed_y = y() + pager->y() - event->y;
             if (!pager->isFocused() || resource->getFocusStyle() != texture)
-                pager->clearFocus();
-            //              XSetWindowBackgroundPixmap(XDisplay(), grabbedWindow, pager->pixmap());
+                XSetWindowBackgroundPixmap(display, grabbedWindow, pager->getPixmap());
             else
-                pager->setFocus();
-            //               XSetWindowBackgroundPixmap(XDisplay(), grabbedWindow, pixmap.focusedWindow);
+                XSetWindowBackgroundPixmap(display, grabbedWindow, pager->getFocusedPixmap());
 
             moveWindow = pager;
             realWindow = pager->realWindow();
@@ -633,8 +631,8 @@ void PagerWindow::setFocus(void)
             XSetWindowBackgroundPixmap(display, pwin[i], pixmap_focused);
         
         XClearWindow(display, pwin[i]);
-        focused = true;
-   } 
+   }
+   focused = true;
 }
 
 void PagerWindow::clearFocus(void)
@@ -648,8 +646,8 @@ void PagerWindow::clearFocus(void)
             XSetWindowBackgroundPixmap(display, pwin[i], pixmap);
 
         XClearWindow(display, pwin[i]);
-        focused = false;
     }
+    focused = false;
 }
 
 
@@ -791,7 +789,6 @@ void ToolWindow::reconfigure(void)
     for (; pit != pager_window_list.end(); pit++) {
         (*pit)->reconfigure();
     }
-
     //frame_window->reconfigure();
 }
 
@@ -845,6 +842,7 @@ void ToolWindow::desktopChange(unsigned int desktop_nr)
             desktop_window->setFocus(); 
     }
     current_desktop_nr = desktop_nr;
+    wminterface->updateWindowStack();
 }
 
 DesktopWindow *ToolWindow::findDesktopWindow(unsigned int desktop_nr)

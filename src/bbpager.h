@@ -96,6 +96,9 @@ public:
     void raise(void);
     void lower(void);
 
+    Pixmap getPixmap(void) { return(pixmap); }
+    Pixmap getFocusedPixmap(void) { return(pixmap_focused); }
+
 private:
     ToolWindow *bbtool;
     bt::Netwm *netwm;
