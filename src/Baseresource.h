@@ -27,6 +27,7 @@
 #include "Color.hh"
 #include "Texture.hh"
 #include "Application.hh"
+#include "Display.hh"
 
 class BaseResource
 {

@@ -23,7 +23,11 @@
 #ifndef __BBPAGER_HH
 #define __BBPAGER_HH
 
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
+
 // Blackbox library includes
+#include "Display.hh"
 #include "Application.hh"
 #include "Timer.hh"
 #include "Texture.hh"
@@ -48,14 +52,14 @@ struct GEOM {
   int y;
 };
 
-class PagerWindow 
+class PagerWindow : public bt::EventHandler 
 {
 	
 public:
 	PagerWindow(ToolWindow *toolwindow, Window _win);		
 	~PagerWindow(void);
-  
-	Window window(void) { return pwin; }
+ 
+    Window window(void);
 	Window realWindow(void) { return win; }
 	
 	int initWindowGeometry(void);
@@ -65,14 +69,15 @@ public:
 	void setFocus(void);
 	void clearFocus(void);
 
-	int desktopId(void) { return desktop_id; }
-    void setDesktopId(int id) { desktop_id = id; }
+	unsigned int desktopId(void) { return desktop_id; }
+    void setDesktopId(unsigned int id) { desktop_id = id; }
 
     bool isSticky(void) { return(sticky); }
     void setSticky(bool val) { sticky = val; }
 
     bool isFocused(void) { return(focused); }
     bool isShaded(void) { return(shaded); }
+    bool isSkipped(void) { return(skip); }
 
     int x(void) { return pager_x; }
     int y(void) { return pager_y; }
@@ -86,14 +91,19 @@ public:
 
     bool isMarked(void) { bool tmp = marked; marked = false; return(tmp); }
     void mark(bool val) { marked = val; }
-   
+    void configureNotifyEvent(const XConfigureEvent * const event);
+    void propertyNotifyEvent(const XPropertyEvent * const event);
+    void raise(void);
+    void lower(void);
+
 private:
     ToolWindow *bbtool;
+    bt::Netwm *netwm;
     int screen;
     Resource *resource;
     ::Display *display;
 	Window win;
-	Window pwin;
+	Window *pwin;
 
 	Pixmap pixmap;
 	Pixmap pixmap_focused;
@@ -103,30 +113,38 @@ private:
 	unsigned int window_width;
 	unsigned int window_height;
 
-	int desktop_id;
+    unsigned int desktop_id;
 	
-	bool icon;
+	bool hidden;
+    bool iconic;
 	bool focused;
 	bool shaded;
     bool marked;
+    bool skip;
 
 	int pager_x;
 	int pager_y;
 	int pager_width;
 	int pager_height;
-	int desktop_nr;
+	unsigned int desktop_nr;
 	bool sticky;
+    unsigned int number_of_desktops;
+
+    void buildPagerWindow(bool reconfigure, unsigned int nr);
+    void showWindow();
+    void hideWindow();
+    void destroyWindow();
 };
 
 class DesktopWindow : public bt::EventHandler
 {
 public:
-	DesktopWindow(ToolWindow *toolwindow);
+	DesktopWindow(ToolWindow *toolwindow, unsigned int _desktop_nr);
 	~DesktopWindow(void);
 
 	Window window(void) { return win; }
 
-	int desktopId(void) { return desktop_id; }
+    unsigned int desktopId(void) { return desktop_id; }
 
 	void reconfigure(void);
 	void buildWindow(bool reconfigure);
@@ -162,11 +180,15 @@ private:
 	Pixmap pixmap_focused;
 	
     ToolWindow *bbtool;
-	int desktop_id;
+	unsigned int desktop_id;
 	int _x;
 	int _y;
 	int _width;
 	int _height;
+    unsigned int desktop_nr;
+   
+    void calcPosition(void);
+
 };
 
 
@@ -181,13 +203,9 @@ public:
     void buildWindow(bool reconfigure);
     int x(void) { return(fx); }
     int y(void) { return(fy); }
-    int desktopX(void) { return(ldx); }
-    int desktopY(void) { return(ldy); }
     void x(int val) { fx = val; }
     void y(int val) { fy = val; }
     void setXY(int x, int y) { fx = x; fy = y; }
-    void addSticky(PagerWindow *tmp);
-    void removeSticky(Window win,int keep_on_desktop);
 
     // message handlers
     virtual void buttonPressEvent(const XButtonEvent * const event);
@@ -208,13 +226,11 @@ private:
     unsigned int fheight;
 
     int current_column;
-    int current_row;
-
+    unsigned int current_row;
+	bool lower;
     
     void calcSize(void);
-    void calcDesktopPosition(void);
 
-	bool lower;
 
 };
 
@@ -228,8 +244,8 @@ public:
 	Resource *resource;
 	int desktop_nr;
 
-	std::list<PagerWindow> pagerWindowList(void) { return(pager_window_list); }
-	std::list<DesktopWindow> desktopWindowList(void) { return(desktop_window_list); }
+	std::list<PagerWindow *> &pagerWindowList(void) { return(pager_window_list); }
+	std::list<DesktopWindow *> &desktopWindowList(void) { return(desktop_window_list); }
 
 	void MakeWindow(bool);
 	void addDesktopWindow(DesktopWindow *, bool);
@@ -239,20 +255,23 @@ public:
 	int getDesktop(Window);
 	int getWindowGeometry(PagerWindow *);
 	void changeDesktop(int);
-	void removeWindow(Window);
 	void changeWindow(Window);
 	void raiseWindow(Window);
 	void lowerWindow(Window);
 	void focusWindow(Window);
-	void desktopChange(int );
-    DesktopWindow *findDesktopWindow(int desktop_nr);
+	void desktopChange(unsigned int desktop_nr);
+    DesktopWindow *findDesktopWindow(unsigned int desktop_nr);
     DesktopWindow *findDesktopWindow(Window win);
 	int winOnDesktop(Window);
 	bool isIcon(Window);
   
 	void changeWinDesktop(Window,int);
     void moveWinToDesktop(Window win, DesktopWindow *desktop);
-    PagerWindow *findPagerWindow(Window win, std::list<PagerWindow>::iterator return_it = NULL );
+    void moveWinToDesktop(PagerWindow *pager_window, unsigned int desktop_nr);
+
+    PagerWindow *findPagerWindow(Window win);
+    PagerWindow *findPPagerWindow(Window win);
+    PagerWindow *findFocusedPagerWindow();
 
 	int getCurrentDesktopNr(void) { return(current_desktop_nr); }
 	int getNumberOfDesktops(void) { return(number_of_desktops); }
@@ -267,26 +286,29 @@ public:
     Configuration &configuration(void) { return(config); }
 
 
-    int numberOfDesktops(void) { return(number_of_desktops); }
-    Atom wmDeleteWindow(void) { return(wm_delete_window); }
-    void addDesktopWindow(void);
+    unsigned int numberOfDesktops(void) { return(number_of_desktops); }
+    Atom wmDeleteWindowAtom(void) { return(xa_wm_delete_window); }
+    Atom wmStateAtom(void) { return(xa_wm_state); }
+
+    void addDesktopWindow(unsigned int nr);
    
 	WMInterface *wminterface;
     
     virtual void shutdown(void);
     bt::Netwm *netwm(void) { return _netwm; }
    
+    Window root_window;
 //protected:
 //	virtual void process_event(XEvent *);
   
+	std::list<PagerWindow *> pager_window_list;
 private:
 
-	std::list<PagerWindow> pager_window_list;
-	std::list<DesktopWindow> desktop_window_list;
+	std::list<DesktopWindow *> desktop_window_list;
 
 	bool wm_init;
-	int number_of_desktops;
-	int current_desktop_nr;
+	unsigned int number_of_desktops;
+	unsigned int current_desktop_nr;
 //	PIXMAP  pixmap;
 //	GEOM frame;
 //	GEOM label;
@@ -298,10 +320,9 @@ private:
 	int row_last,column_last;
 	
     bt::Netwm *_netwm;
-    PagerWindow *focuswin;
-  
-    Atom wm_delete_window;
-
+    
+    Atom xa_wm_delete_window;
+    Atom xa_wm_state;
 	const bt::ScreenInfo &current_screen_info;
 	int current_screen;
 

@@ -97,5 +97,5 @@ int main(int argc,char **argv)
 	}
 
 	ToolWindow bbpager(options);
-	bbpager.eventLoop();
+	bbpager.run();
 }

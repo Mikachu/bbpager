@@ -27,7 +27,6 @@
 BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const std::string &filename) : 
 	app(_app), display(_app.display())
 {
-  	bool use_default = true;
 	const bt::ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
 	screen = _screen;
 
@@ -51,7 +50,8 @@ BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const st
 		if (!blackbox_stylefile.empty()) {
 			bt_resource.load(blackbox_stylefile);
 		}
-
+#if 0
+  	    bool use_default = true;
 		if (!filename.empty()) {
 			if (!bt_resource.merge(filename)) {
 				fprintf(stderr, "warning: Cannot open resource file %s, using default\n", filename.c_str());
@@ -61,12 +61,19 @@ BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const st
 		}
 		
 		if (use_default) {
-			if (!bt_resource.merge(std::string("BBTOOL_LOCAL"))) {
-				if (!bt_resource.merge(std::string("BBTOOL_GLOBAL"))) {
-					fprintf(stderr, "Warning: Cannot open resoource files, using internal defaults\n");
+			if (!bt_resource.merge(std::string(BBTOOL_LOCAL))) {
+				if (!bt_resource.merge(std::string(BBTOOL_GLOBAL))) {
+					fprintf(stderr, "Warning: Cannot open resource files, using internal defaults\n");
 				}
 			}
 		}
+#endif
+    	if (!filename.empty()) {
+	    	bt_resource.merge(filename);
+        } else {
+			bt_resource.merge(std::string(BBTOOL_GLOBAL));
+            bt_resource.merge(std::string(BBTOOL_LOCAL));
+        }
 	}
 }
 
@@ -173,7 +180,7 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 	
 	color = bt::Color::namedColor(display, screen, rcolor);
 	texture.setColor(color);
-	
+
 	rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", default_colorTo);
 	colorTo = bt::Color::namedColor(display, screen, rcolor);
 	texture.setColorTo(colorTo);
@@ -212,6 +219,7 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 	if (rcolor.empty()) {
 		rcolor = bt_resource.read(alt_rname + ".colorTo", alt_rclass + ".ColorTo", default_colorTo);
 	}
+
 	colorTo = bt::Color::namedColor(display, screen, rcolor);
 	texture.setColorTo(colorTo);
 

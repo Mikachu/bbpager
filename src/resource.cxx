@@ -105,7 +105,14 @@ void Resource::SizeAndPosition()
 			position.x = 0;
 		if (!(position.mask & YValue))
 			position.y = 0;
-	}
+	} else {
+    	position.mask = XParseGeometry(bbtool->configuration().geometry().c_str(), &position.x, &position.y, &w, &h);
+		if (!(position.mask & XValue))
+			position.x = 0;
+		if (!(position.mask & YValue))
+			position.y = 0;
+
+    }
 
   
   	columns = readUInt("bbpager.columns", "Bbpager.Columns", 1);
@@ -144,43 +151,44 @@ void Resource::PagerWin()
 {
 	std::string focus_style;
 
-	focus_style = readString( "bbpager.desktop.focusStyle", "border", "");
-    	if (! strcasecmp("texture", focus_style.c_str()))
+	focus_style = readString( "bbpager.desktop.focusStyle", "Bbpager.Desktop.FocusStyle", "border");
+
+    if (strcasecmp("texture", focus_style.c_str()) == 0) {
 		desktop_focus_style = texture;
-	else if (!focus_style.empty()) 
+    } else if (! strcasecmp("none", focus_style.c_str())) 
 		desktop_focus_style = none;
 	else 
 		desktop_focus_style = border;
   
 	desktopwin.texture = readTexture("bbpager.desktop", "Bbpager.Desktop",
 			                 BB_LABEL,"Toolbar.Label",
-					 "Sunken Gradient Diagonal Bevel1",
+					 "Sunken Gradient Diagonal",
 					 "slategrey","darkslategrey");
 
 	if (desktop_focus_style == texture)
 		desktopwin.focusedTexture = readTexture("bbpager.desktop.focus", "Bbpager.Desktop.Focus",
-						       "Sunken Gradient Diagonal Bevel1",
+						       "Sunken Gradient Diagonal",
 						       "darkslategrey","slategrey");
 
 	std::string window_focus_style = readString("bbpager.window.focusStyle", "Bbpager.Window.FocusStyle", 
 						    "texture");
 	
    	if (! strcasecmp("border", window_focus_style.c_str()))
-		desktop_focus_style = border;
+		pager_focus_style = border;
 	else if (! strcasecmp("none", window_focus_style.c_str())) 
-		desktop_focus_style = none;
+		pager_focus_style = none;
 	else 
-		desktop_focus_style = texture;
+		pager_focus_style = texture;
 
 	pagerwin.texture = readTexture("bbpager.window", "Bbpager.Window",
-			               BB_WINDOW_UNFOCUS,
-				       "Raised Gradient Diagonal Bevel1"
+			               BB_WINDOW_UNFOCUS, "Window.Focus",
+				       "Raised Gradient Diagonal",
 				       "rgb:c/9/6","rgb:8/6/4");
 
-	if (desktop_focus_style == texture)
+	if (pager_focus_style == texture) 
 		pagerwin.focusedTexture = readTexture("bbpager.window.focus","Bbpager.Window.Focus",
 						       BB_WINDOW_FOCUS,"Window.Focus",
-		  				      "Raised Vertical Gradient Bevel1",
+		  				      "Raised Vertical Gradient",
 						      "rgb:c/9/6","rgb:8/6/4");
   
  	pagerwin.activeColor = readColor("bbpager.active.window.borderColor",
@@ -196,3 +204,4 @@ void Resource::PagerWin()
 					   "LightGrey");
 
 }
+

@@ -31,13 +31,11 @@ class ToolWindow;
 struct WindowList;
 
 
-class WMInterface : public bt::EventHandler {
-
+class WMInterface : public bt::EventHandler 
+{
     public:
         WMInterface(ToolWindow *);
         ~WMInterface(void);
-
-        void moduleInit(void);
 
         void removeSticky(Window,int);
         void addSticky(WindowList *);
@@ -47,22 +45,25 @@ class WMInterface : public bt::EventHandler {
         void changeIconState(Window);
         void windowAttributeChange(Window);
 
-        int getNumberOfDesktops(void);
+        int getNumberOfDesktops(void) { unsigned int number; netwm->readNumberOfDesktops(root_window, &number); return(number); }
         int getCurrentDesktop(void);
         void changeDesktop(int);
         void updateWindowList(void);
 
-        void focus(Window win);
         void changeNumberOfDesktops(int number_of_desktops);
         bool readActiveWindow(Window target, Window *active);
         void processClientEvents(XEvent Event);
 
         virtual void propertyNotifyEvent(const XPropertyEvent * const event);
+
     private:
         ToolWindow *bbtool;
 
         Window root_window;
         bt::Netwm *netwm;
+
+        void sendClientMessage(Window window, Atom atom, XID data);
+        void updateWindowStack();
 };
 
 #endif /* __WMINTERFACE_HH */

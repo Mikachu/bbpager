@@ -80,7 +80,7 @@ public:
   struct BBPAGERWIN desktopwin;
   int columns;
   int rows;
-  int getFocusStyle(void) { return focus_style; }
+  int getFocusStyle(void) { return pager_focus_style; }
   int getDesktopFocusStyle(void) { return desktop_focus_style; }
   WHICH_BUTTON getWindowMoveButton(void) { return window_move_button; }
   WHICH_BUTTON getDesktopChangeButton(void) { return desktop_change_button; }
@@ -96,7 +96,7 @@ private:
   void Frame(void);
   void SizeAndPosition(void);
   void PagerWin(void);
-  int focus_style;
+  int pager_focus_style;
   int desktop_focus_style;
   WHICH_BUTTON window_move_button;
   WHICH_BUTTON desktop_change_button;
