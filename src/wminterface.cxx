@@ -117,8 +117,8 @@ void WMInterface::sendWindowToDesktop(Window win,int desk_number)
 
 void WMInterface::setWindowFocus(Window win) 
 {
-//    netwm->setActiveWindow(root_window, win);
-    sendClientMessage(root_window, netwm->activeWindow(), win);
+    //netwm->setActiveWindow(root_window, win);
+    sendClientMessage(win, netwm->activeWindow(), win);
 
 }
 
