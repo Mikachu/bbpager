@@ -53,9 +53,12 @@ ToolWindow::ToolWindow(Configuration cml_options):
 
 
     resource = new Resource(this, config.rcFilename());
+
     _netwm = new bt::Netwm(XDisplay());
     _netwm->readNumberOfDesktops(current_screen_info.rootWindow(), &number_of_desktops);
+
     frame_window = new FrameWindow(this);
+
     wminterface = new WMInterface(this);
 
     xa_wm_state =  XInternAtom(XDisplay(),"WM_STATE", False);
@@ -80,6 +83,13 @@ ToolWindow::~ToolWindow()
     for (it = desktop_window_list.begin(); it != desktop_window_list.end(); it++) {
         delete (*it);
     }
+
+    list<PagerWindow *>::iterator pit = pagerWindowList().begin();
+
+    for (; pit != pagerWindowList().end(); pit++) {
+        delete (*pit);
+    }
+
 }
 
 void ToolWindow::moveWinToDesktop(PagerWindow *pager_window, unsigned int desktop_nr) 
@@ -282,8 +292,9 @@ FrameWindow::FrameWindow(ToolWindow *toolwindow) :
 {
     screen = bbtool->getCurrentScreen();
     display = bbtool->XDisplay();
-
+    pixmap = 0;
     buildWindow(false);
+
     bbtool->insertEventHandler(win, this);
 }
 
@@ -303,7 +314,6 @@ void FrameWindow::buildWindow(bool reconfigure)
 
     pixmap = bt::PixmapCache::find(screen, 
              bbtool->resource->frame.texture, fwidth, fheight);
-
 
     if (!reconfigure) {
         XSetWindowAttributes attrib;
@@ -343,19 +353,37 @@ void FrameWindow::buildWindow(bool reconfigure)
         XStringListToTextProperty(&name, 1, &windowname);
         XSetWMProperties(display, win ,&windowname, NULL, bbtool->configuration().argv(), 
                          bbtool->configuration().argc(), NULL, &wmhints, &classhints);
+        XFree(windowname.value);
         Atom wmproto[1];
         wmproto[0] = bbtool->wmDeleteWindowAtom();
         XSetWMProtocols(display, win, wmproto, 1);
 
-        bt::Netwm::AtomList window_type_atom;
-        window_type_atom.push_back(bbtool->netwm()->wmWindowTypeDock());
 
         if (!bbtool->configuration().isDecorated() && !bbtool->configuration().isWithdrawn()) {
+            bt::Netwm::AtomList window_type_atom;
+            window_type_atom.push_back(bbtool->netwm()->wmWindowTypeDock());
+
             XChangeProperty(display, win, bbtool->netwm()->wmWindowType(), XA_ATOM,
                             32, PropModeReplace,
                             reinterpret_cast<unsigned char*>(&(window_type_atom[0])), window_type_atom.size());
-        } 
-                             
+  
+                 
+       }
+       if (!bbtool->configuration().isWithdrawn()) {
+            unsigned int dekstop_nr = static_cast<unsigned int>(-1);
+            XChangeProperty(display, win, bbtool->netwm()->wmDesktop(), XA_CARDINAL,
+                            32, PropModeReplace,
+                            reinterpret_cast<unsigned char*>(&dekstop_nr), 1);
+
+             bt::Netwm::AtomList window_state_atom;
+            window_state_atom.push_back(bbtool->netwm()->wmStateSticky());
+            window_state_atom.push_back(bbtool->netwm()->wmStateSkipTaskbar());
+            window_state_atom.push_back(bbtool->netwm()->wmStateSkipPager());
+
+            XChangeProperty(display, win, bbtool->netwm()->wmState(), XA_ATOM,
+                          32, PropModeReplace,
+                            reinterpret_cast<unsigned char*>(&(window_state_atom[0])), window_state_atom.size());
+       } 
     } else if (!bbtool->configuration().isWithdrawn()) {
         XMoveResizeWindow(display, win, fx, fy, fwidth, fheight);
     } else {
@@ -465,7 +493,9 @@ void FrameWindow::configureNotifyEvent(const XConfigureEvent * const event)
 
 void FrameWindow::clientMessageEvent(const XClientMessageEvent * const event)
 {
-   if ((unsigned)event->data.l[0] == bbtool->wmDeleteWindowAtom()) bbtool->shutdown();
+   if ((unsigned)event->data.l[0] == bbtool->wmDeleteWindowAtom()) {
+        bbtool->shutdown();
+   }
 }
 
 void ToolWindow::MakeWindow(bool reconfigure) 
