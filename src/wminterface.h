@@ -49,7 +49,8 @@ class WMInterface : public bt::EventHandler
         int getCurrentDesktop(void);
         void changeDesktop(int);
         void updateWindowList(void);
-
+        void updateWindowStack(void);
+        
         void changeNumberOfDesktops(int number_of_desktops);
         bool readActiveWindow(Window target, Window *active);
         void processClientEvents(XEvent Event);
@@ -63,7 +64,6 @@ class WMInterface : public bt::EventHandler
         bt::Netwm *netwm;
 
         void sendClientMessage(Window window, Atom atom, XID data);
-        void updateWindowStack();
 };
 
 #endif /* __WMINTERFACE_HH */
