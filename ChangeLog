@@ -1,0 +1,122 @@
+version-0.3.1
+- Fixed compilation for gcc-3.0 and up.
+
+version-0.3.0
+- Fix bug which caused bbpager to segfault when a window poped up and
+  immediately closed.
+
+version-0.2.9
+- Updated the Image and Display code (copied some files from latest blackbox)
+
+version-0.2.8
+- nethints changed to blackboxhints (Luckily Bradley made the patch)
+
+version-0.2.7
+- update Image.*
+
+version-0.2.6
+- fixed compile time error with enums 
+  (thanks to Sean 'Shaleh' Perry for the patch)
+- fixed bbpager taking focus, it shouldn't
+- when you iconize a window it disappears.
+
+version-0.2.5
+- added support for Blackbox-0.60.0
+- added window focus and window raise mouse buttons
+- fixed various other bugs
+
+version-0.1.6
+- fixed small bug which made bbpager segfault
+- Updated INSTALL file
+- added run-time configuration of mouse button 
+  (thanks to Sean 'Shaleh' Perry <shaleh@via.net>).
+
+version-0.1.5
+- fixed disappearing when iconized.
+- gave decorated window a name.
+- added possibility to close decorated window.
+- fixed height/width problems. 
+- height or width are only as big as needed (not always as wide as columns or
+  as high as rows)
+
+
+version-0.1.4
+- fixed segfault when using the -c option for non Blackbox systems.
+- fixed core dump on -w for non Blackbox systems, which doesn't mean
+  -w works.
+- You can't resize the decorated window anymore, and it stays the correct size
+  now.
+- if you iconize it, it doesn't vanishes anymore.
+- sudden core dumps in Window Maker belong to the past (I hope).
+
+version-0.1.3
+- fixed segfault when closing windows
+- fixed a number of bugs which caused segfault at startup
+- added session.* resources to bbpager.nobb
+
+version-0.1.2
+- fixed segfault when closing windows.
+- fixed enable debug config options.
+
+version-0.1.1
+- fixed some minor bugs
+- fixed placement global configuration files. 
+  (./configure --prefix=<somewhere> should work again)
+
+version-0.1.0
+- added command-line option to show pager in normal (decorated) window.
+- display focused window as texture, border-color or not.
+- display current desktop as texture border or not.
+- new buttonstyle is now default
+
+version-0.0.9
+- changed configuration
+- fixed bug which made program segfault when a pager-window was placed
+  outside bbpager.
+- Updated image code from blackbox 0.51.0
+- Added BaseDisplay code so future updates of the image code only means 
+  dropping n the new Image.cc and Image.hh. (thanks Bradley)
+
+version-0.0.8
+- fixed a bug in change desktop, 
+  now bbpager should work with all kwm-compliant window managers.
+- add new button style: middle button moves the windows, left button switch 
+  desktop.
+
+version-0.0.7
+- fixed a few bugs
+- sticky windows now show up (when you make them sticky after bbpager started).
+- fixed autoraise
+- fixed (de)iconize
+- add matrix-display of pager
+- Blackbox keys now work again while on bbpager
+- made new patch for Blackbox-0.50.5 
+  now all pager windows should be deleted when applications
+  close (thanks to Brad Huges).
+
+version-0.0.6
+- can now place bbpager in the slit (and it reconfigures)
+- can choose for horizotal or vertical orientation
+- fixed bug, iconfied windows not showing up after deiconfying.
+- fixed bug, windows which are moved with title bar Send to now
+show up correctly in pager 
+
+version-0.0.5
+- cleaned up the source.
+
+version-0.0.4 (internal)
+- Added moving windows
+
+version-0.0.3 (internal)
+- Added changing workspaces
+
+version-0.0.2
+-  It is now possible to add and remove desktops.
+-  resources are in place.
+-  windows are now raised and lowered in the pager (an patch for Blackbox is
+   needed to do this)
+-  focused desktop and window are shown.
+
+
+version-0.0.1
+-  First release

@@ -1,0 +1,8 @@
+- fix iconize when shaded.
+
+
+- Add tooltip window showing name of real window in pager.
+- Maybe add supprt for Window Maker docking.
+- Add and update documentation.
+- Clean up the code.
+- testing.

@@ -1,0 +1,29 @@
+To make and install this program :
+
+run:
+./configure (for configure options see ./configure --help)
+make
+make install (as root)
+
+The global configuration files can be found in $(datadir)/bbtools 
+(default: /usr/local/share/bbtools).
+
+Blackbox users:
+---------------
+
+By default bbpager reads the Blackbox style-file as defined in .blackboxrc 
+and copies as much of the style as possible. The result is a application 
+which looks a lot like the toolbar. 
+
+Furthermore bbpager reads the bbpager.bb config file.
+The global configuration is placed in /usr/local/share/bbtools/
+The local configuration can be placed in $HOME/.bbtools/
+Just copy the global configuration file to $HOME/.bbtools/ (and change it)
+
+Users other Window managers:
+----------------------------------------------------------------
+
+bbpager reads the bbpager.nobb config file.
+The global configuration is placed in /usr/local/share/bbtools/
+The local configuration can be placed in $HOME/.bbtools/
+Just copy the global configuration file to $HOME/.bbtools/ (and change it) 

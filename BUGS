@@ -1,0 +1,3 @@
+- reports X-windows errors on certain windows.
+- moving 'stick'ed windows to other workspace causes segfault.
+- shaded windows don't show as such on the pager.

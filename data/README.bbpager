@@ -1,0 +1,55 @@
+This file gives a short description of the configuration possibilities of
+bbpager.
+
+** Configuring bbpager **
+------------------------
+
+Blackbox users:
+
+By default bbpager reads the Blackbox style-file as defined in .blackboxrc 
+and copies as much of the style as possible. The result is a application 
+which looks a lot like the toolbar. 
+
+Configuration options can be changed in bbpager.bb. 
+Most likely you want to change some of these options, 
+
+The global configuration file can be found in $datadir/bbtools/bbpager.bb
+A local configuration can be made by copying the bbpager.bb file to 
+$HOME/.bbtools/bbpager.bb and editing it.
+
+
+Users other Window managers:
+
+Configuration options can be changed in bbpager.bb. 
+Most likely you want to change some of these options, 
+
+The global configuration file can be found in $datadir/bbtools/bbpager.nobb
+A local configuration can be made by copying the bbpager.nobb file to 
+$HOME/.bbtools/bbpager.nobb and editing it.
+
+
+** Reconfigure bbpager.**
+------------------------
+
+Automatic update style:
+	If the resource : bbpager.autoConfig: true
+	The tool will periodically check if the main config files, .blackboxrc
+	for Blackbox users and bbpager.nobb for other WM's to see if 
+	they have changed. If so bbpager will reconfigure.
+
+
+** Copying the look of the Blackbox toolbar **
+----------------------------------------------
+bbpager automaticly copes the style of the blackbox toolbar.
+It copies:
+toolbar                	 	-> bbpager.frame
+toolbar.label           	-> bbpager.label
+toolbar.color           	-> bbpager.frame.color
+toolbar.colorTo         	-> bbpager.frame.colorTo
+toolbar.label.color     	-> bbpager.label.color
+toolbar.label.colorTo   	-> bbpager.label.colorTo
+toolbar.textColor       	-> bbpager..textColor
+bevelWidth              	-> bbpager.bevelWidth
+
+For the meaning of the different resources see the comments in the
+config-files.

@@ -1,0 +1,2 @@
+#define BBTOOL "bbpager"
+#define BBTOOL_VERSION "@VERSION@"
