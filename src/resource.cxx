@@ -114,22 +114,25 @@ void Resource::SizeAndPosition()
 
     }
 
-  
-  	columns = readUInt("bbpager.columns", "Bbpager.Columns", 1);
+    position.horizontal = false;
+    position.vertical = false;
+ 	std::string orientation = readString( "bbpager.desktop.orientation", "Bbpager.Desktop.Orientation", "horizontal");
+
+    if (orientation == "vertical") {
+       position.vertical = true;
+    } else {
+            position.horizontal = true;
+    }   
+
+
+  	columns = readUInt("bbpager.desktop.columns", "Bbpager.Desktop.Columns", 0xFFFF);
 	if (columns == 0) 
-	  columns = 1;
+	  columns = 0xFFFF;
 
-	rows = readUInt("bbpager.rows","Bbpager.Rows", 1);
+	rows = readUInt("bbpager.desktop.rows","Bbpager.Desktop.Rows", 0XFFFF);
 	if (rows == 0) 
-		rows = 1;
+		rows = 0xFFFF;
   
-	if (!position.horizontal && !position.vertical) {
-		if (bbtool->configuration().isWithdrawn())
-			position.vertical = true;
-		else
-			position.horizontal = true;
-	}
-
 	int default_width;
 	if (!bbtool->configuration().isWithdrawn())
 		default_width = 40;

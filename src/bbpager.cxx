@@ -114,13 +114,13 @@ void DesktopWindow::calcPosition(void)
 {
     int column, row;
     unsigned int bw = bbtool->getResource()->frame.bevelWidth;
-    if (bbtool->getResource()->position.vertical) {
+    if (bbtool->getResource()->position.horizontal) {
         // horizontal.
         row = (desktop_nr) / bbtool->getResource()->columns;
-        column = (desktop_nr) % bbtool->getResource()->rows;
+        column = (desktop_nr) % bbtool->getResource()->columns;
     } else {
         // vertical
-        row = (desktop_nr) % bbtool->getResource()->columns;
+        row = (desktop_nr) % bbtool->getResource()->rows;
         column = (desktop_nr) / bbtool->getResource()->rows;
     }
     _x = column * (bw + bbtool->getResource()->desktopSize.width) + bw;
@@ -1007,7 +1007,7 @@ void FrameWindow::resize(void)
 void FrameWindow::calcSize(void)
 {
 
-    if (bbtool->resource->position.vertical) {
+    if (bbtool->resource->position.horizontal) {
         if (bbtool->numberOfDesktops() < static_cast<unsigned int>(bbtool->resource->columns)) {
             fwidth = (unsigned int)(bbtool->getResource()->desktopSize.width + 
                      bbtool->resource->frame.bevelWidth) *
