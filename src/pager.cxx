@@ -121,7 +121,7 @@ void PagerWindow::buildWindow(bool reconfigure)
 {
     double xdiv,ydiv;
 
-    if (skip) return;       // don't build window if state skipPagerWindow is set.
+//    if (skip) return;       // don't build window if state skipPagerWindow is set.
     initWindowGeometry();
     xdiv = 10;
     ydiv = 10;
@@ -214,12 +214,11 @@ void PagerWindow::destroyWindow()
 
 void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
 {
-    unsigned long create_mask = CWBackPixmap|/*CWCursor|*/CWBorderPixel;
+    unsigned long create_mask = CWBackPixmap|CWBorderPixel;
     XSetWindowAttributes attrib;
 
     attrib.background_pixmap = ParentRelative;
     attrib.border_pixel=resource->pagerwin.inactiveColor.pixel(screen);
-//    attrib.cursor = XCreateFontCursor(display, XC_left_ptr); //getSessionCursor();
 
     DesktopWindow *desktop = bbtool->findDesktopWindow(nr);
     if (!sticky) nr = 0;
@@ -242,7 +241,7 @@ void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
     else
         XSetWindowBackgroundPixmap(display, pwin[nr], pixmap_focused);
     
-    if (!hidden && !iconic)
+    if (!hidden /*&& !iconic*/ && !skip)
         XMapWindow(display, pwin[nr]);
 
     XClearWindow(display, pwin[nr]);
@@ -302,12 +301,12 @@ void PagerWindow::propertyNotifyEvent(const XPropertyEvent * const event)
         if (skip_state) {
             if (!skip) {
                 skip = true;
-                destroyWindow();                
+                hideWindow();                
             }
         } else {
             if (skip) {
                 skip = false;
-                buildWindow(false);                
+                showWindow();                
             }
         }
         if (hidden_state) {
@@ -327,12 +326,12 @@ void PagerWindow::propertyNotifyEvent(const XPropertyEvent * const event)
             if (bbtool->wminterface->isIconicState(event->window)) {
                 if (!iconic) {
                     iconic = true;
-                    hideWindow();
+//                    hideWindow();
                  }
             } else {
                 if (iconic) {
                     iconic = false;
-                    showWindow();
+//                    showWindow();
                 }
             }
         }  
