@@ -8,7 +8,9 @@ bbpager_SOURCES = bbpager.cxx bbpager.h \
 		 Baseresource.cxx Baseresource.h \
 		 resource.cxx resource.h \
 		 wminterface.cxx wminterface.h \
-		 blackboxstyle.h
+		 blackboxstyle.h \
+         pager.cxx pager.h \
+         desktop.cxx desktop.h
 #		 pagermenu.cc pagermenu.hh \
 bbpager_LDADD = @X_LIBS@
 

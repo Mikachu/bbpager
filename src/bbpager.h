@@ -1,6 +1,6 @@
-// bbpager.hh for bbpager - an pager tool for Blackbox.
+// bbpager.h for bbpager - an pager tool for Blackbox.
 //
-//  Copyright (c) 1998-2003 by John Kennis, jkennis@chello.nl
+//  Copyright (c) 1998-2004 by John Kennis, jkennis@chello.nl
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 //
 
 
-#ifndef __BBPAGER_HH
-#define __BBPAGER_HH
+#ifndef __BBPAGER_H
+#define __BBPAGER_H
 
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
@@ -34,166 +34,21 @@
 #include "PixmapCache.hh"
 #include "Pen.hh"
 #include "EventHandler.hh"
+#include "Netwm.hh"
 
+//bbpager includes
 #include "main.h"
 #include "resource.h"
 #include "wminterface.h"
-#include "Netwm.hh"
+#include "pager.h"
+#include "desktop.h"
+
 
 #include <list>
 
 class Resource;
 class WMInterface;
-
-struct GEOM {
-  unsigned int height;
-  unsigned int width;
-  int x;
-  int y;
-};
-
-class PagerWindow : public bt::EventHandler 
-{
-	
-public:
-	PagerWindow(ToolWindow *toolwindow, Window _win);		
-	~PagerWindow(void);
- 
-    Window window(void);
-	Window realWindow(void) { return win; }
-	
-	int initWindowGeometry(void);
-	void reconfigure(void);
-	void buildWindow(bool reconfigure);
-
-	void setFocus(void);
-	void clearFocus(void);
-
-	unsigned int desktopId(void) { return desktop_id; }
-    void setDesktopId(unsigned int id) { desktop_id = id; }
-
-    bool isSticky(void) { return(sticky); }
-    void setSticky(bool val) { sticky = val; }
-
-    bool isFocused(void) { return(focused); }
-    bool isShaded(void) { return(shaded); }
-    bool isSkipped(void) { return(skip); }
-
-    int x(void) { return pager_x; }
-    int y(void) { return pager_y; }
-    void x(int val) { pager_x = val; }
-    void y(int val) { pager_y = val; }
-
-    void width(int w) { pager_width = w; }
-    void height(int h) { pager_height = h; }
-    int width(void) { return(pager_width); }
-    int height(void) { return(pager_height); }
-
-    bool isMarked(void) { bool tmp = marked; marked = false; return(tmp); }
-    void mark(bool val) { marked = val; }
-    void configureNotifyEvent(const XConfigureEvent * const event);
-    void propertyNotifyEvent(const XPropertyEvent * const event);
-    void raise(void);
-    void lower(void);
-
-    Pixmap getPixmap(void) { return(pixmap); }
-    Pixmap getFocusedPixmap(void) { return(pixmap_focused); }
-
-private:
-    ToolWindow *bbtool;
-    bt::Netwm *netwm;
-    int screen;
-    Resource *resource;
-    ::Display *display;
-	Window win;
-	Window *pwin;
-
-	Pixmap pixmap;
-	Pixmap pixmap_focused;
-
-	int window_x;
-	int window_y;
-	unsigned int window_width;
-	unsigned int window_height;
-
-    unsigned int desktop_id;
-	
-	bool hidden;
-    bool iconic;
-	bool focused;
-	bool shaded;
-    bool marked;
-    bool skip;
-
-	int pager_x;
-	int pager_y;
-	int pager_width;
-	int pager_height;
-	unsigned int desktop_nr;
-	bool sticky;
-    unsigned int number_of_desktops;
-
-    void buildPagerWindow(bool reconfigure, unsigned int nr);
-    void showWindow();
-    void hideWindow();
-    void destroyWindow();
-};
-
-class DesktopWindow : public bt::EventHandler
-{
-public:
-	DesktopWindow(ToolWindow *toolwindow, unsigned int _desktop_nr);
-	~DesktopWindow(void);
-
-	Window window(void) { return win; }
-
-    unsigned int desktopId(void) { return desktop_id; }
-
-	void reconfigure(void);
-	void buildWindow(bool reconfigure);
-
-	void setFocus(void);
-	void clearFocus(void);
-
-    int x(void) { return(_x); }
-    int y(void) { return(_y); }
-    int width(void) { return(_width); }
-    int height(void) { return(_height); }
-	
-    virtual void buttonPressEvent(const XButtonEvent * const event);
-    virtual void buttonReleaseEvent(const XButtonEvent * const event);
-    virtual void motionNotifyEvent(const XMotionEvent * const event);
-private:
-	Window win;
-    Window grabbedWindow;
-    PagerWindow *moveWindow;
-    Window realWindow;
-    Window pagerWindow;
-
-    int grabbed_x;
-    int grabbed_y;
-    int move_x;
-    int move_y;
-    bool moved;
-
-    int screen;
-	::Display *display;
-    Resource *resource;
-	Pixmap pixmap;
-	Pixmap pixmap_focused;
-	
-    ToolWindow *bbtool;
-	unsigned int desktop_id;
-	int _x;
-	int _y;
-	int _width;
-	int _height;
-    unsigned int desktop_nr;
-   
-    void calcPosition(void);
-
-};
-
+class DesktopWindow;
 
 class FrameWindow : public bt::EventHandler
 {
@@ -301,9 +156,6 @@ public:
     bt::Netwm *netwm(void) { return _netwm; }
    
     Window root_window;
-//protected:
-//	virtual void process_event(XEvent *);
-  
 	std::list<PagerWindow *> pager_window_list;
 private:
 
@@ -312,12 +164,6 @@ private:
 	bool wm_init;
 	unsigned int number_of_desktops;
 	unsigned int current_desktop_nr;
-//	PIXMAP  pixmap;
-//	GEOM frame;
-//	GEOM label;
-//	GEOM lbutton;
-//	GEOM rbutton;
-//	fd_set rfds;
 	char **iargv;
 	int iargc;
 	int row_last,column_last;
@@ -333,4 +179,5 @@ private:
     Configuration &config;
 };
 
-#endif /* __BBPAGER_HH */
+#endif // __BBPAGER_H
+
