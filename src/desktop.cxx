@@ -43,6 +43,7 @@ DesktopWindow::DesktopWindow(ToolWindow *toolwindow, unsigned int _desktop_nr):
     moved = false;
     buildWindow(false);
     bbtool->insertEventHandler(win, this);
+    grabbedWindow = 0;
 }
 
 
@@ -52,14 +53,6 @@ DesktopWindow::~DesktopWindow(void)
 
     if (pixmap) bt::PixmapCache::release(pixmap);
     if (pixmap_focused) bt::PixmapCache::release(pixmap_focused);
-
-    list<PagerWindow *>::iterator it = bbtool->pagerWindowList().begin();
-
-    for (; it != bbtool->pagerWindowList().end(); it++) {
-        if ((*it)->desktopId() == desktop_id) {
-            bbtool->pagerWindowList().erase(it);
-        }
-    }
 }
 
 void DesktopWindow::reconfigure(void)
