@@ -1,6 +1,6 @@
 // resource.cc for bbpager - a pager tool for Blackbox
 //
-//  Copyright (c) 1998-2000 John Kennis, jkennis@chello.nl
+//  Copyright (c) 1998-2003 John Kennis, jkennis@chello.nl
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,250 +22,178 @@
 #include "resource.hh"
 #include "blackboxstyle.hh"
 
-Resource::Resource(ToolWindow *toolwindow): BaseResource(toolwindow) {
-  Load();
+Resource::Resource(ToolWindow *toolwindow, , const std::string &rc_file): 
+		BaseResource(*toolwindow, toolwindow->getCurrentScreen(), rc_file), bbtool(toolwindow)
+{
+	Load();
 }
 
-Resource::~Resource() {
-  Clean();
+Resource::~Resource() 
+{
+	Clean();
 }
 
-void Resource::Clean() {}
-
-
-
-void Resource::LoadBBToolResource(void) {
-  XrmValue value;
-  char *value_type;
-  unsigned int button = 0;
-  WHICH_BUTTON move_default = LEFT_BUTTON;
-  if (XrmGetResource(resource_db, "bbpager.desktopChangeButton",
-                     "Bbpager.Desktopchangebutton", &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &button) != 1 || (button > 5 || button < 1))
-      desktop_change_button = MIDDLE_BUTTON;
-    else {
-      desktop_change_button = (WHICH_BUTTON)button;
-	  if (desktop_change_button == LEFT_BUTTON)
-        move_default = MIDDLE_BUTTON; // new default to avoid clashes
-      button = 0;
-    }
-  } else
-      desktop_change_button = MIDDLE_BUTTON;
-  
-  if (XrmGetResource(resource_db, "bbpager.windowMoveButton",
-                     "Bbpager.WindowMovebutton", &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &button) != 1 || (button > 5 || button < 1))
-      window_move_button = move_default;
-    else {
-        window_move_button = (WHICH_BUTTON)button;
-    }
-  } else
-      window_move_button = move_default;
-
-  if (XrmGetResource(resource_db, "bbpager.windowFocusButton",
-                     "Bbpager.WindowFocusbutton", &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &button) != 1 || (button > 5 || button < 1))
-      window_focus_button = INVALID_BUTTON;
-    else {
-        window_focus_button = (WHICH_BUTTON)button;
-    }
-  } else
-      window_focus_button = INVALID_BUTTON;
-
-  if (XrmGetResource(resource_db, "bbpager.windowRaiseButton",
-                     "Bbpager.WindowRaiseButton", &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &button) != 1 || (button > 5 || button < 1))
-      window_raise_button = INVALID_BUTTON;
-    else {
-        window_raise_button = (WHICH_BUTTON)button;
-    }
-  } else
-      window_raise_button = INVALID_BUTTON;
-
-
-  Frame();
-  
-  SizeAndPosition();
-
-  PagerWin();
+void Resource::Clean() 
+{
 }
 
 
-void Resource::Frame() {
-  XrmValue value;
-  char *value_type;
 
-  readTexture("bbpager.frame","BbPager.Frame",BB_FRAME,"Toolbar",
-             "slategrey","darkslategrey","Raised Gradient Vertical Bevel1",
-             &frame.texture);
+void Resource::Load(void) 
+{
+	unsigned int button = 0;
+	WHICH_BUTTON move_default = LEFT_BUTTON;
 
-  if (XrmGetResource(resource_db, "bbpager.bevelWidth","Bbpager.BevelWidth",
-                     &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &frame.bevelWidth) != 1)
-      frame.bevelWidth = 4;
-    else if (frame.bevelWidth == 0)
-      frame.bevelWidth = 4;
-  } else if (XrmGetResource(resource_db, BB_BEVELWIDTH,"BevelWidth", &value_type,
-                            &value)) {
-    if (sscanf(value.addr, "%u", &frame.bevelWidth) != 1)
-      frame.bevelWidth = 4;
-    else if (frame.bevelWidth == 0)
-      frame.bevelWidth = 4;
-  } else
-    frame.bevelWidth = 4;
-}
+	button = readUInt("bbpager.desktopChangeButton", "Bbpager.Desktopchangebutton", MIDDLE_BUTTON);
+	if (button > 5 || button < 1) {
+		button = MIDDLE_BUTTON;
+	}
+	desktop_change_button = static_cast<WHICH_BUTTON>(button);
+	if (desktop_change_button == LEFT_BUTTON) {
+		move_default = MIDDLE_BUTTON;
+	}
 
+	button = readUInt("bbpager.windowMoveButton", "Bbpager.WindowMovebutton", move_default);
+	if (button > 5 || button < 1) {
+		button = move_default;
+	}
+	window_move_button = static_cast<WHICH_BUTTON>(button);
 
-void Resource::SizeAndPosition() {
-  XrmValue value;
-  char *value_type;
-  unsigned int w,h;
-  char positionstring[11];
+	button = readUInt("bbpager.windowFocusButton", "Bbpager.WindowFocusbutton", INVALID_BUTTON);
+	if (button > 5 || button < 1) {
+		button = INVALID_BUTTON;
+	}
 
-  if (!(bbtool->position)) {
-    if (!(XrmGetResource(resource_db, "bbpager.position","Bbpager.Position",
-                         &value_type, &value)))
-      strncpy(positionstring, "-0-0", 5);
-    else
-      strncpy(positionstring, value.addr, strlen(value.addr)+1);
-  } else
-    strncpy(positionstring, bbtool->position, strlen(bbtool->position)+1);
+	button = readUInt("bbpager.windowRaiseButton", "Bbpager.WindowRaisebutton", INVALID_BUTTON);
+	if (button > 5 || button < 1) {
+		button = INVALID_BUTTON;
+	}
 
-
-  position.mask=XParseGeometry(positionstring, &position.x, &position.y, 
-                              &w, &h);
-
-  if (!(position.mask & XValue))
-    position.x=0;
-  if (!(position.mask & YValue))
-    position.y=0;
-
-
-  if (XrmGetResource(resource_db, "bbpager.columns",
-                       "Bbpager.Columns",
-                       &value_type, &value)) {
-     if (sscanf(value.addr, "%u", &columns) != 1)
-       columns=1;
-     else {
-       position.vertical=True;
-       if (columns==0) columns=1;
-     }
-  }
-  else
-    columns=1;
-
-  if (XrmGetResource(resource_db, "bbpager.rows","Bbpager.Rows",
-                                         &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &rows) != 1)
-      rows=1;
-    else {
-      position.horizontal=True;
-      if (rows==0) rows=1;
-    }
-  }
-  else
-    rows=1;
-  
-  if (!position.horizontal && !position.vertical) {
-    if (bbtool->withdrawn)
-        position.vertical=True;
-    else
-      position.horizontal=True;
-  }
-
-  if (!(XrmGetResource(resource_db, "bbpager.desktop.width",
-                       "Bbpager.Desktop.Width",
-                       &value_type, &value))) {
-    if (!bbtool->withdrawn)
-      desktopSize.width=40;
-    else
-      desktopSize.width=64/columns - ((columns-1))*frame.bevelWidth;
-  }
-  else
-    if (sscanf(value.addr, "%u", &desktopSize.width) != 1) {
-      if (!bbtool->withdrawn)
-        desktopSize.width=40;
-      else
-        desktopSize.width=64/columns - ((columns-1))*frame.bevelWidth;
+	Frame();
  
-    }
+	SizeAndPosition();
 
-  if (!(XrmGetResource(resource_db, "bbpager.desktop.height",
-                       "Bbpager.Desktop.Height",
-                       &value_type, &value))) {
-    if (!bbtool->withdrawn)
-      desktopSize.height=30;
-    else
-      desktopSize.height=48/columns;
-  } 
-  else
-    if (sscanf(value.addr, "%u", &desktopSize.height) != 1) {
-      if (!bbtool->withdrawn)
-        desktopSize.width=30;
-      else
-        desktopSize.height=48/columns;
-    }  
+	PagerWin();
 }
 
-void Resource::PagerWin() {
-  XrmValue value;
-  char *value_type;
 
-  if (XrmGetResource(resource_db, "bbpager.desktop.focusStyle",
-                     "Bbpager.Desktop.FocusStyle", &value_type, &value)) {
-    if (! strncasecmp("texture", value.addr, value.size))
-      desktop_focus_style = texture;
-    else if (! strncasecmp("none", value.addr, value.size)) 
-      desktop_focus_style = none;
-    else 
-      desktop_focus_style = border;
-  } else
-    desktop_focus_style = border;
+void Resource::Frame() 
+{
+	frame.texture = readTexture("bbpager.frame","BbPager.Frame",BB_FRAME,"Toolbar",
+				    "Raised Gradient Vertical Bevel1", "slategrey","darkslategrey");
+
+	frame.bevelWidth = readUInt( "bbpager.bevelWidth","Bbpager.BevelWidth", 4);
+	if (frame.bevelWidth == 0)
+		frame.bevelWidth = 4;
+}
+
+
+void Resource::SizeAndPosition() 
+{
+	unsigned int w, h;
+	char positionstring[11];
+
+	if (!(bbtool->config().isWithdrawn())) 
+		bbtool->config().setWithdrawn(readBool("bbpager.withdrawn", "Bbpager.Withdrawn", false));
+
+	if (!(bbtool->config().isShaped())) 
+		bbtool->config().setShaped(readBool("bbpager.shape", "Bbpager.Shape", bbtool->config().isWithdrawn()));
+
+	if (bbtool->config().geometry().empty()) {
+		std::string positionstring = readString("bbpager.position","Bbpager.Position", "-0-0");
+		position.mask = XParseGeometry(positionstring.c_str(), &position.x, &position.y, &w, &h);
+		if (!(position.mask & XValue))
+			position.x = 0;
+		if (!(position.mask & YValue))
+			position.y = 0;
+	}
 
   
-  readTexture("bbpager.desktop", "Bbpager.Desktop",
-              BB_LABEL,"Toolbar.Label",
-              "slategrey","darkslategrey",
-              "Sunken Gradient Diagonal Bevel1",&desktopwin.texture);
+  	columns = readUInt("bbpager.columns", "Bbpager.Columns", 1);
+	if (columns == 0) 
+	  columns = 1;
 
-  if (desktop_focus_style==texture)
-    readTexture("bbpager.desktop.focus", "Bbpager.Desktop.Focus",
-                0,0,
-                "darkslategrey","slategrey",
-                "Sunken Gradient Diagonal Bevel1",&desktopwin.focusedTexture);
-
-  if (XrmGetResource(resource_db, "bbpager.window.focusStyle",
-                     "Bbpager.Window.FocusStyle", &value_type, &value)) {
-    if (! strncasecmp("border", value.addr, value.size))
-      focus_style = border;
-    else if (! strncasecmp("none", value.addr, value.size)) 
-      focus_style = none;
-    else 
-      focus_style = texture;
-  } else
-    focus_style = texture;
-
-  readTexture("bbpager.window", "Bbpager.Window",
-              BB_WINDOW_UNFOCUS,"Window.Unfocus",
-              "rgb:c/9/6","rgb:8/6/4",
-              "Raised Gradient Diagonal Bevel1",&pagerwin.texture);
-
-  if (focus_style==texture)
-    readTexture("bbpager.window.focus","Bbpager.Window.Focus",
-                      BB_WINDOW_FOCUS,"Window.Focus", "rgb:c/9/6","rgb:8/6/4",
-                      "Raised Vertical Gradient Bevel1",
-                      &pagerwin.focusedTexture);
+	rows = readUInt("bbpager.rows","Bbpager.Rows", 1);
+	if (rows == 0) 
+		rows = 1;
   
-  readColor("bbpager.active.window.borderColor",
-            "Bbpager.active.Window.BorderColor",
-             0,0,"LightGrey",&pagerwin.activeColor);
+	if (!position.horizontal && !position.vertical) {
+		if (bbtool->config()->isWithdrawn())
+			position.vertical = true;
+		else
+			position.horizontal = true;
+	}
 
-  readColor("bbpager.inactive.window.borderColor",
-            "Bbpager.inactive.Window.BorderColor",
-            0,0,"black",&pagerwin.inactiveColor);
+	int default_width;
+	if (!bbtool->config().isWithdrawn())
+		default_width = 40;
+	else
+		default_width = 64 / columns - ((columns - 1)) * frame.bevelWidth;
 
-  readColor("bbpager.active.desktop.borderColor",
-            "Bbpager.Active.desktop.BorderColor",
-            0,0,"LightGrey",&desktopwin.activeColor);
+	desktopSize.width = readUInt("bbpager.desktop.width", "Bbpager.Desktop.Width", default_width);
+      
+	int default_height;
+	if (!bbtool->config().isWithdrawn())
+		default_height = 30;
+	else
+		default_height = 48 / columns;
+
+	desktopSize.height = readUInt("bbpager.desktop.height", "Bbpager.Desktop.Height", default_height);
+}
+
+void Resource::PagerWin() 
+{
+	std::string focus_style;
+
+	focus_style = readString( "bbpager.desktop.focusStyle", "border");
+    	if (! strcasecmp("texture", focus_style.c_str()))
+		desktop_focus_style = texture;
+	else if (! strcasecmp("none", focus_style.c_str())) 
+		desktop_focus_style = none;
+	else 
+		desktop_focus_style = border;
+  
+	desktopwin.texture = readTexture("bbpager.desktop", "Bbpager.Desktop",
+			                 BB_LABEL,"Toolbar.Label",
+					 "Sunken Gradient Diagonal Bevel1",
+					 "slategrey","darkslategrey");
+
+	if (desktop_focus_style == texture)
+		desktopwin.focusTexture = readTexture("bbpager.desktop.focus", "Bbpager.Desktop.Focus",
+						       "Sunken Gradient Diagonal Bevel1",
+						       "darkslategrey","slategrey");
+
+	std::string window_focus_style = readString("bbpager.window.focusStyle", "Bbpager.Window.FocusStyle", 
+						    "texture");
+	
+    	if (! strcasecmp("border", window_focus_style.c_str()))
+		focus_style = border;
+	else if (! strcasecmp("none", window_focus_style.c_str())) 
+		focus_style = none;
+	else 
+		focus_style = texture;
+
+	pagerwin.texture = readTexture("bbpager.window", "Bbpager.Window",
+			               BB_WINDOW_UNFOCUS,"Window.Unfocus",
+				       "Raised Gradient Diagonal Bevel1"
+				       "rgb:c/9/6","rgb:8/6/4");
+
+	if (focus_style == texture)
+		pagerwin.focusedTexture = readTexture("bbpager.window.focus","Bbpager.Window.Focus",
+						       BB_WINDOW_FOCUS,"Window.Focus",
+		  				      "Raised Vertical Gradient Bevel1",
+						      "rgb:c/9/6","rgb:8/6/4");
+  
+ 	pagerwin.activeColor = readColor("bbpager.active.window.borderColor",
+			                 "Bbpager.active.Window.BorderColor",
+				          "LightGrey");
+
+	pagerwin.inactiveColor = readColor("bbpager.inactive.window.borderColor",
+					   "Bbpager.inactive.Window.BorderColor",
+					   "black");
+
+	desktopwin.activeColor = readColor("bbpager.active.desktop.borderColor",
+					   "Bbpager.Active.desktop.BorderColor",
+					   "LightGrey");
 
 }

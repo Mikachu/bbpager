@@ -1,6 +1,6 @@
 //  main.hh for bbtools.
 //
-//  Copyright (c) 1998-2000 by John Kennis, jkennis@chello.nl
+//  Copyright (c) 1998-2003 by John Kennis, jkennis@chello.nl
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -19,16 +19,48 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
-#include "version.h"
+class Configuration
+{
+public:
+	Configuration(int iargc, char **argv);
+	~Configuration(void);
+	
+	int argc(void) { return _argc; }
+	char **argv(void) { return _argv; }
+	
+	bool isWithdrawn(void) { return withdrawn; }
+	void setWithdrawn(bool _withdrawn) { withdrawn = _withdrawn; }
 
-struct CMDOPTIONS {
-  bool withdrawn;
-  bool shape;
-  char *geometry;
-  char *config_file;
-  bool nobb_config;
-  char *display_name;
-  bool decorated;
+	bool isDecorated(void) { return decorated; }
+	void setDecorated(bool _decorated) { decorated = _decorated; }
+
+	bool isShaped(void) { return shape; }
+	void setShaped(bool _shape) { shape = _shape; }
+
+	const std::string &rcFilename(void) { return rc_filename; }
+	void setRcFilename(std::string filename) { rc_filename = filename; }
+
+	const std::string &appName(void) { return app_name; }
+	void setAppName(std::string name) { app_name = name; }
+
+	const std::string &displayName(void) { return display_name; }
+	void setDisplayName(std::string name) { display_name = name; }
+
+	const std::string &geometry(void) { return _geometry; }
+	void setGeometry(std::string geo) { _geometry = geo; }
+	
+private:
+	bool withdrawn;
+	bool decorated;
+	bool shape;
+	int _argc;
+	char **_argv;
+	char *position;
+	std::string _geometry;
+	
+	std::string rc_filename;
+	std::string app_name;
+	std::string display_name;
 };
 
 #endif // __MAIN_H

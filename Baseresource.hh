@@ -1,6 +1,6 @@
 // Baseresource.hh for bbtools - tools to display resources in X11.
 //
-//  Copyright (c) 1998-2000 John Kennis, jkennis@chello.nl
+//  Copyright (c) 1998-2003 John Kennis, jkennis@chello.nl
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,62 +22,67 @@
 #ifndef __BASERESOURCE_HH
 #define __BASERESOURCE_HH
 
-#define BBTOOLS 1
-#define BLACKBOX 2
+#include "Font.hh"
+#include "Resource.hh"
+#include "Color.hh"
+#include "Texture.hh"
+#include "Application.hh"
 
-#define BBTOOL_LOCAL ".bbtools/bbpager.nobb"
-#define BLACKBOX_LOCAL ".bbtools/bbpager.bb"
+class BaseResource
+{
 
-#include "Timer.hh"
+	public:
+		BaseResource(bt::Application &_app, unsigned int _screen, const std::string &filename);
 
-class ToolWindow;
-class BImageControl;
+		virtual ~BaseResource(void);
 
-struct STYLE {
-  bool auto_config;
-  char *conf_filename;
-  char *style_filename;
-  time_t  mtime;
-};
 
-class BaseResource : public TimeoutHandler {
+	protected:
+		std::string readString(const std::string &rname, const std::string &rclass, const std::string &default_val);
+		std::string readString(const std::string &rname, const std::string &rclass,
+				       const std::string &alt_rname, const std::string &alt_rclass,
+				       const std::string &default_val);
 
-  public:
-    BaseResource(ToolWindow *);
-    virtual ~BaseResource(void);
+		int readInt(const std::string &rname, const std::string &rclass, int default_val);
+		unsigned int readUInt(const std::string &rname, const std::string &rclass, unsigned int default_val);
+		unsigned int readUInt(const std::string &rname, const std::string &rclass,
+				      const std::string &alt_rname, const std::string &alt_rclass,
+				      unsigned int default_val);
+	
+		bool readBool(const std::string &rname, const std::string &rclass, bool default_val);
+		bt::Color readColor(const std::string &rname,const std::string &rclass,
+	                             	  const std::string &default_color);
+		bt::Color readColor(const std::string &rname,const std::string &rclass,
+				    const std::string &alt_rname, const std::string &alt_rclass,
+	                            const std::string &default_color);
+		bt::Texture readTexture(const std::string &rname, 
+					const std::string &rclass,
+				       	const std::string &default_texture,
+				 	const std::string &default_color,
+				 	const std::string &default_colorTo);
+		bt::Texture readTexture(const std::string &rname, 
+					const std::string &rclass,
+					const std::string &alt_rname,
+					const std::string &alt_rclass,
+				       	const std::string &default_texture,
+				 	const std::string &default_color,
+				 	const std::string &default_colorTo);
+		bt::Font readFont(const std::string &rname, 
+				  const std::string &rclass,
+				  const std::string &alt_rname,
+				  const std::string &alt_rclass);
+		std::string getColorName(const bt::Color &color);
 
-    void CopyColor(BColor *,BColor *);
-    void CopyTexture(BTexture ,BTexture *);
-    void Reload(void);
-    STYLE style;
+		void loadMenuStyle(void);
+		
+private:
+	bt::Resource bt_resource;
+	bt::Application &app;
+	unsigned int screen;
+	const bt::Display &display;
 
-  protected:
-    void Load(void);
-    void readDatabaseColor(char *, char *, BColor *);
-    void readDatabaseTexture(char *, char *,BTexture *);
-    void readColor(char *,char *, char *,char *,char *,BColor *);
-    void readTexture(char *,char *, char *,char *,char *,char *,char *,
-                BTexture *);
-
-  
-    ToolWindow *bbtool;
-    XrmDatabase resource_db;
-    XrmDatabase db;
-
-    virtual void LoadBBToolResource(void) = 0;
-    virtual void timeout(void);
-  private:
-    bool ReadResourceFromFilename(char *, char *);
-    void ReadBBtoolResource(void);
-    void ReadDefaultResource(void);
-    void ReadBlackboxResource(void);
-    BImageControl *image_control;
-    int ResourceType;
-    BTimer *timer;
-    int check_timeout;
-    time_t mtime;
-    struct stat file_status;
-    bool auto_config;
+	int colors_per_channel;
+	bool image_dither;
 };
 
 #endif /* __BASERESOURCE_HH */

@@ -23,13 +23,49 @@
 #include "resource.hh"
 #include "BaseDisplay.hh"
 
-WMInterface::WMInterface(ToolWindow *toolwindow) : BlackboxInterface(toolwindow) {
-  bbtool=toolwindow;
+WMInterface::WMInterface(ToolWindow *toolwindow) : 
+	BlackboxInterface(toolwindow), bbtool(toolwindow);
+{
 }
 
-WMInterface::~WMInterface() {}
+WMInterface::~WMInterface() 
+{
+}
 
-void WMInterface::moduleInit() {
+void WMInterface::moduleInit() 
+{
+}
+
+void WMInterface::updateWindowList(void)
+{
+	WindowList window_vect;
+	PWindow *pwindow;
+  
+	if (readClientList(bbtool->getCurrentScreenInfo()->rootWindow(), window_vect)) {
+		/* add any new window windows */
+		bt::Netwm::WindowList::iterator it = window_vect.begin();
+		bt::Netwm::WindowList::iterator it_end = window_vect.end();
+
+		for (; it != it_end; it++) {
+			pwindow = bbtool->findWindow((*it))
+			if ( pwindow == NULL) {
+				bbtool->windowList().insert(new PWindow((bbtool, *it)));
+			} else {
+				pwindow.setMarked();
+			}
+		}
+
+	  	/* delete any windows not in list */
+		PWindowList::iterator pit = bbtool->windowList().begin();
+		PWindowList::iterator pit_end = bbtool->windowList().end();
+	
+		for (; pit != pit_end; pit++) {
+			if (!(*pit)->isMarked()) {
+				delete *pit;
+				bbtool->windowList().erase(pit);
+			}
+		}
+	}
 }
 
 void WMInterface::sendClientMessage(Atom atom, XID data) {

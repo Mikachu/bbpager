@@ -1,6 +1,6 @@
 // bbpager.hh for bbpager - an pager tool for Blackbox.
 //
-//  Copyright (c) 1998-2000 by John Kennis, jkennis@chello.nl
+//  Copyright (c) 1998-2003 by John Kennis, jkennis@chello.nl
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 //
 
 
-#ifndef __MAIN_HH
-#define __MAIN_HH
+#ifndef __BBPAGER_HH
+#define __BBPAGER_HH
 
 #include "Image.hh"
 #include "Basewindow.hh"
@@ -29,17 +29,7 @@
 #include "wminterface.hh"
 
 class Resource;
-class BaseResource;
-class Basewindow;
 class WMInterface;
-
-struct PIXMAP {
-  Pixmap 	frame;
-  Pixmap	desktop;
-  Pixmap  focusedDesktop;
-  Pixmap  window;
-  Pixmap  focusedWindow;
-};
 
 struct GEOM {
   unsigned int height;
@@ -48,102 +38,160 @@ struct GEOM {
   int y;
 };
 
-struct WindowList {
-  Window win;
-  int x_position;
-  int y_position;
-  unsigned int width;
-  unsigned int height;
-  bool icon;
-  bool focused;
-  bool shaded;
-  Window pager_win;
-  int pager_x;
-  int pager_y;
-  int pager_width;
-  int pager_height;
-  int desktop_nr;
-  bool sticky;
+class PagerWindow 
+{
+	
+public:
+	PagerWindow(Window _win);		
+	~PagerWindow(void);
+  
+	Window window(void) { return win; }
+	Window pagerWindow(void) { return pwin; }
+	
+	int initWindowGeometry(void);
+	void reconfigure(void);
+	void buildWindow(bool reconfigure);
+
+	void setFocus(void);
+	void clearFocus(void);
+
+	int desktopId(void) { return desktop_id; }
+
+
+private:
+	Window win;
+	Window pwin;
+
+	Pixmap pixmap;
+	Pixmap pixmap_focused;
+	
+	int window_x;
+	int window_y;
+	unsigned int window_width;
+	unsigned int window_height;
+
+	int desktop_id;
+	
+	bool icon;
+	bool focused;
+	bool shaded;
+
+	int pager_x;
+	int pager_y;
+	int pager_width;
+	int pager_height;
+	int desktop_nr;
+	bool sticky;
 };
 
-struct DesktopList {
-    Window win;
-    int desktop_nr;
-    int x;
-    int y;
-    int width;
-    int height;
-  };
+class DesktopWindow
+{
+public:
+	DesktopWindow(ToolWindow *toolwindow);
+	~DesktopWindow(void);
+
+	Window window(void) { return win; }
+
+	int desktopId(void) { return desktop_id; }
+
+	void reconfigure(void);
+	void buildWindow(bool reconfigure);
+
+	void setFocus(void);
+	void clearFocus(void);
+	
+private:
+	Window win;
+
+	Pixmap pixmap;
+	Pixmap pixmap_focused;
+	
+	int desktop_id;
+	int x;
+	int y;
+	int width;
+	int height;
+};
 
 
-class ToolWindow : public Basewindow {
+class FrameWindow
+{
+public:
+	FrameWindow(ToolWindow *toolwindow);
+	~FrameWindow(void);
+
+	Window window(void) { return win; }
+
+
+private:
+	Window win;
+
+	Pixmap pixmap;
+};
+
+class ToolWindow : public bt::Application {
 
 public:
-  ToolWindow(int argc,char **argv,struct CMDOPTIONS *);
-  ~ToolWindow(void);
+	ToolWindow(Configuration options);
+	~ToolWindow(void);
 
-  XGCValues gcv;
-  GC frameGC;
+	Resource *resource;
+	int desktop_nr;
 
-  Window framewin;
-  Resource *resource;
-  int desktop_nr;
+	std::list<PagerWindow> pagerWindowList(void) { return pager_window_list; }
+	std::list<DesktopWindow> desktopWindowList(void) { return desktop_window_list; }
 
-  LinkedList<WindowList> *windowList;
-  LinkedList<DesktopList> *desktopList;
+	void MakeWindow(bool);
+	void addDesktopWindow(DesktopWindow *, bool);
+	void addFrameWindow(PagerWindow *, Window, bool);
+	void removeDesktopWindow(void);
+	void reconfigure(void);
+	int getDesktop(Window);
+	int getWindowGeometry(struct WindowList *);
+	void changeDesktop(int);
+	void removeWindow(Window);
+	void changeWindow(Window);
+	void raiseWindow(Window);
+	void lowerWindow(Window);
+	void focusWindow(Window);
+	void desktopChange(int );
+	int winOnDesktop(Window);
+	bool isIcon(Window);
+	void changeWinDesktop(Window,int);
+	void moveWinToDesktop(Window, DesktopList *);
+	int getCurrentDesktopNr(void) { return current_desktop_nr; }
+	int getNumberOfDesktops(void) { return number_of_desktops; }
+	void setNumberOfDesktops(int n) { number_of_desktops=n; }
 
-  void MakeWindow(bool);
-  void addDesktopWindow(struct DesktopList *,bool);
-  void addFrameWindow(struct WindowList *,Window,bool);
-  void removeDesktopWindow(void);
-  void reconfigure(void);
-  int getDesktop(Window);
-  int getWindowGeometry(struct WindowList *);
-  void changeDesktop(int);
-  void removeWindow(Window);
-  void changeWindow(Window);
-  void raiseWindow(Window);
-  void lowerWindow(Window);
-  void focusWindow(Window);
-  void desktopChange(int );
-  int winOnDesktop(Window);
-  bool isIcon(Window);
-  void changeWinDesktop(Window,int);
-  void moveWinToDesktop(Window,DesktopList *);
-  int getCurrentDesktopNr(void) { return current_desktop_nr; }
-  int getNumberOfDesktops(void) { return number_of_desktops; }
-  void setNumberOfDesktops(int n) { number_of_desktops=n; }
-
-  void setBlackboxInit(void) { wm_init = True; }
-  struct PIXMAP getPixmap(void) { return pixmap; }
-  Resource *getResource(void) { return resource; }
+	void setBlackboxInit(void) { wm_init = true; }
+//	struct PIXMAP getPixmap(void) { return pixmap; }
+	Resource *getResource(void) { return resource; }
 
 protected:
-  virtual void process_event(XEvent *);
+	virtual void process_event(XEvent *);
   
 private:
 
-  bool lower;
-  bool wm_init;
-  int day,month,year;
-  int number_of_desktops;
-  int current_desktop_nr;
-  PIXMAP  pixmap;
-  GEOM frame;
-  GEOM label;
-  GEOM lbutton;
-  GEOM rbutton;
-  fd_set rfds;
-  char **iargv;
-  int iargc;
-  int row_last,column_last;
-  
-  Window focuswin;
-  
-  WMInterface *wminterface;
+	std::list<PagerWindow> pager_window_list;
+	std::list<DesktopWindow> desktop_window_list;
 
-void CheckConfig(void);
-
+	bool lower;
+	bool wm_init;
+	int number_of_desktops;
+	int current_desktop_nr;
+//	PIXMAP  pixmap;
+//	GEOM frame;
+//	GEOM label;
+//	GEOM lbutton;
+//	GEOM rbutton;
+//	fd_set rfds;
+	char **iargv;
+	int iargc;
+	int row_last,column_last;
+  
+	PagerWindow &focuswin;
+  
+	WMInterface *wminterface;
 };
 
-#endif /* __MAIN_HH */
+#endif /* __BBPAGER_HH */

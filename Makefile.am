@@ -1,20 +1,19 @@
-CPPFLAGS =	@CPPFLAGS@  @INTERLACE@ \
-		-DGLOBAL_BB=\"$(datadir)/bbtools/bbpager.bb\" \
-		-DGLOBAL_NOBB=\"$(datadir)/bbtools/bbpager.nobb\"
+CPPFLAGS = @CPPFLAGS@ @SHAPE@ \
+-DBBTOOL_GLOBAL=\"$(datadir)/bbtools/bbpager.rc\" \
+-DBBTOOL_LOCAL=\"~/.bbtools/bbpager.rc\"
+				
 
-
-SUBDIRS = data
+SUBDIRS = data scripts
+man_MANS = bbpager.1
 bin_PROGRAMS = bbpager
-bbpager_SOURCES = bbpager.cc Image.cc LinkedList.cc \
-  		  bbpager.hh Image.hh LinkedList.hh \
-		  Timer.hh Timer.cc \
-		  main.cc main.hh \
-		  resource.cc resource.hh \
-		  Baseresource.cc Baseresource.hh \
-		  Basewindow.cc Basewindow.hh \
-		  BaseDisplay.cc BaseDisplay.hh \
-		  wminterface.cc wminterface.hh \
-		  NETInterface.cc NETInterface.hh \
-		  blackboxstyle.hh
-EXTRA_DIST = BUGS TODO
-bbpager_LDADD = @X_LIBS@
+bbmail_SOURCES = bbpager.cc bbpager.hh \
+		 main.cc main.hh \
+		 Baseresource.cc Baseresource.hh \
+		 resource.cc resource.hh \
+		 wminterface.cc wminterface.hh \
+		 NETInterface.cc NETInterface.hh \
+		 blackboxstyle.hh
+#		 pagermenu.cc pagermenu.hh \
+EXTRA_DIST = $(man_MANS) BUGS TODO
+bbmail_LDADD = @X_LIBS@
+

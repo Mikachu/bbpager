@@ -1,6 +1,6 @@
 // bbpager.cc for bbpager - a pager for Blackbox.
 //
-//  Copyright (c) 1998-2000 by John Kennis, jkennis@chello.nl
+//  Copyright (c) 1998-2003 by John Kennis, jkennis@chello.nl
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,574 +23,460 @@
 #include "version.h"
 #include <stdio.h>
 
-ToolWindow::ToolWindow(int argc,char **argv, struct CMDOPTIONS *options) :
-  Basewindow(argc,argv,options) {
-  XrmInitialize();
+DesktopWindow::DesktopWindow(ToolWindow *toolwindow):
+	bbtool(toolwindow)
+{
+	buildWindow(false);
+}
 
-  iargc=argc;
-  iargv=argv;
 
+DesktopWindow::~DesktopWindow(void)
+{
+	XDestroyWindow(bbtool->XDisplay(), win);
+
+	if (pixmap) bt::PixmapCache::release(pixmap);
+	if (pixmap_focused) bt::PixmapCache::release(pixmap_focused);
+
+	std::list<PagerWindow>::iterator it = bbtool->pagerWindowList().begin();
+
+	for (; it != bbtool->pagerWindowList().end(); it++) {
+	  	if ((*it).isSticky()) {
+			/* not yet supported */
+		}
+		if ((*it).desktopId == id) {
+		  	bbtool->pagerWindowList().remove(it);
+			delete (*it);
+		}
+	}
+
+}
+
+void DesktopWindow::reconfigure(void)
+{
+	buildWindow(true);
+}
+
+void DesktopWindow::buildWindow(bool reconfigure) 
+{
+	XSetWindowAttributes attrib;
+	int row, column;
+	unsigned long create_mask = CWBackPixmap|CWCursor|CWEventMask|CWBorderPixel;
+
+	attrib.background_pixmap = ParentRelative;
+	attrib.border_pixel = bbtool->getResource()->desktopwin.activeColor.getPixel();
+	attrib.cursor =  XCreateFontCursor(display, XC_left_ptr); //getSessionCursor();
+	attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
+			    FocusChangeMask | StructureNotifyMask|
+			    SubstructureRedirectMask | ButtonMotionMask;
+
+	_width = bbtool->getResource()->desktopSize.width;
+	_height = bbtool->getResource()->desktopSize.height;
+  
+	bbtool->frameWindow().resize();
+
+	pixmap = bt::PixmapCache::find(bbtool->getCurrentScreen(), 
+		 bbtool->getResource()->desktopwin.texture, _width, _height);
+
+	if (resource->getDesktopFocusStyle() == texture)
+		pixmap = bt::PixmapCache::find(bbtool->getCurrentScreen(), 
+			 bbtool->getResource()->desktopwin.focusedTexture, _width, _height);
+
+	if (!reconfigure)
+		win = XCreateWindow(bbtool->XDisplay(), bbtool->frameWindow.window(), _x, _y, _width,
+                           _height, 0, bbtool->getCurrentScreenInfo()->depth(),
+                           InputOutput, bbtool->getCurrentScreenInfo()->visual(),
+                           create_mask, &attrib);
+	else
+		XMoveResizeWindow(bbtool->XDisplay(), win, _x, _y, _width, _height);
+
+	XSetWindowBackgroundPixmap(bbtool->XDisplay(), win, pixmap.desktop);
+	XMapSubwindows(bbtool->XDisplay(), framewin);
+	XClearWindow(bbtool->XDisplay(), framewin);
+	XClearWindow(bbtool->XDisplay(), win);
+	desktop_nr = bbtool->desktop_nr++;
+}
+
+void DesktopWindow::setFocus(void)
+{
+	if (bbtool->getResource()->getDesktopFocusStyle() == border)
+		XSetWindowBorderWidth(bbtool->XDisplay(), win, 1);
+	else
+		XSetWindowBackgroundPixmap(bbtool->XDisplay(), win, pixmap_focused);
+
+	XClearWindow(bbtool->XDisplay(),win);
+
+}
+
+void DesktopWindow::clearFocus(void)
+{
+	if (bbtool->getResource->getDesktopFocusStyle() == border)
+		XSetWindowBorderWidth(bbtool->XDisplay(), win, 0);
+	else
+		XSetWindowBackgroundPixmap(bbtool->XDisplay(), win, pixmap);
+
+	XClearWindow(bbtool->XDisplay(), win);
+}
+
+
+
+PagerWindow::PagerWindow(ToolWindow *toolwindow, Window _window):
+	bbtool(toolwindow)
+{
+	win = _window;
+	buildWindow(false);
+}
+
+PagerWindow::~PagerWindow(void)
+{
+
+    	XDestroyWindow(XDisplay(), pwin);
+	if (pixmap) bt::PixmapCache::release(pixmap);
+	if (pixmap_focused) bt::PixmapCache::release(pixmap_focused);
+}
+
+void PagerWindow::buildWindow(bool reconfigure)
+{
+	XSetWindowAttributes attrib;
+	unsigned long create_mask = CWBackPixmap|CWCursor|CWBorderPixel;
+	double xdiv,ydiv;
+
+	xdiv = 10;
+	ydiv = 10;
+
+	bbtool->desktopWindow().find(desktop_nr);
+	//if (!desktopWin) {
+	//	LinkedListIterator<DesktopList> desktop_it(desktopList);
+	//	desktop_it.set(window->desktop_nr);
+	//	desktopWin = desktop_it.current()->win;
+	//}
+
+	attrib.background_pixmap = ParentRelative;
+	attrib.border_pixel=resource->pagerwin.inactiveColor.getPixel();
+	attrib.cursor = getSessionCursor();
+
+	xdiv = (double)bbtool->getResource()->desktopSize.width / 
+		bbtool->getCurrentScreenInfo()->width();
+	ydiv = (double)resource->desktopSize.height / getCurrentScreenInfo()->getHeight();
+	pager_x = (int)(x_position * xdiv);
+	pager_y = (int)(y_position * ydiv);
+	pager_width = (unsigned int)(window->width * xdiv);
+	pager_height=(unsigned int)(window->height * ydiv);
+	if (pager_width == 0)   
+		window->pager_width = 1;
+	if (window->pager_height == 0) 
+	  	window->pager_height = 1;
+
+  
+	if (!reconfigure)
+		pwin = XCreateWindow(bbtool->XDisplay(), desktop_window,
+			     pager_x, pager_y, pager_width, pager_height,
+			     1, bbtool->getCurrentScreenInfo()->depth(), 
+			     InputOutput, bbtool->getCurrentScreenInfo()->visual(), 
+			     create_mask,&attrib);
+	else
+		XMoveResizeWindow(getXDisplay(), pwin, pager_x, pager_y, pager_width, pager_height);
+
+	XSelectInput(XDisplay(), win, PropertyChangeMask|StructureNotifyMask);
+
+	pixmap.window =	getImageControl()->renderImage(resource->desktopSize.width,
+                  resource->desktopSize.height,
+                  &resource->pagerwin.texture);
+
+	if (resource->getFocusStyle()==texture)
+		pixmap.focusedWindow =	
+			getImageControl()->renderImage(resource->desktopSize.width,
+                  resource->desktopSize.height,
+                  &resource->pagerwin.focusedTexture);
+
+	
+  	if (!window->focused)
+		XSetWindowBackgroundPixmap(XDisplay(), pwin, pixmap.window);
+	else
+		XSetWindowBackgroundPixmap(getXDisplay(), pwin, pixmap.focusedWindow);
+	
+	if (!window->icon)
+		XMapWindow(getXDisplay(),window->pager_win);
+
+	XClearWindow(getXDisplay(),window->pager_win );
+
+}
+
+void PagerWindow::reconfigure(void)
+{
+	buildWindow(true);  
+}
+
+int PagerWindow::initWindowGeometry(void) 
+{
+	unsigned int border_width, depth;
+	Window root_return, child_return;
+	int x_return, y_return;
+	int status;
+
+	status = XGetGeometry(bbtool->XDisplay(), win, &root_return, &x_return,
+                        &y_return, &_width, &_height,
+                        &border_width, &depth);
+	if (status) {
+		XTranslateCoordinates(bbtool->XDisplay(), win, root_return, x_return,
+                          y_return, &x_position, &y_position, &child_return);
+		return 1;
+	}
+	return 0;
+}
+
+void PagerWindow::setFocus(void)
+{
+	if (bbtool->getResource()->getFocusStyle() == border)
+		XSetWindowBorder(bbtool->XDisplay(), pwin,
+				 bbtool->getResource()->pagerwin.activeColor.getPixel());
+	else 
+		XSetWindowBackgroundPixmap(bbtool->XDisplay(), pwin, pixmap_focused);
+    
+		XClearWindow(bbtool->XDisplay(), pwin);
+		focused = true;
+	
+}
+
+void PagerWindow::clearFocus(void)
+{
+
+	if (bbtool->getResource->getFocusStyle() == border)
+		XSetWindowBorder(XDisplay(), pwin,
+				bbtool->getResource()->pagerwin.inactiveColor.getPixel());
+	else
+		XSetWindowBackgroundPixmap(XDisplay(), pwin, pixmap);
+
+      	focused = false;
+      
+      	XClearWindow(XDisplay(), pwin);
+}
+
+
+ToolWindow::ToolWindow(Configuration cml_options):
+	bt::Application(cml_options.appName(), cml_options.displayName().c_str(), false),
+	current_screen_info(display().screenInfo(DefaultScreen(XDisplay()))),
+	_config(cml_options)
+
+{
   resource = new Resource(this);
   wminterface = new WMInterface(this);
-  windowList = new LinkedList<WindowList>;
-  desktopList = new LinkedList<DesktopList>;
 
-  desktop_nr=0;
-  current_desktop_nr=-1;
-  wm_init=False;
-  number_of_desktops=0;
-  row_last=column_last=0;
-  MakeWindow(False);
+  desktop_nr = 0;
+  current_desktop_nr = -1;
+  wm_init = false;
+  number_of_desktops = 0;
+  row_last = column_last = 0;
+//  MakeWindow(false);
   wminterface->moduleInit();
-  eventLoop();
 }
 
 ToolWindow::~ToolWindow() {
-  XUnmapWindow(getXDisplay(),framewin);
-
-  /* destroy pixmaps */
-  if (pixmap.frame) getImageControl()->removeImage(pixmap.frame);
-  if (pixmap.desktop) getImageControl()->removeImage(pixmap.desktop);
-  if (pixmap.window) getImageControl()->removeImage(pixmap.window);
-  if (pixmap.focusedWindow) 
-    getImageControl()->removeImage(pixmap.focusedWindow);
-  if (pixmap.focusedDesktop) 
-    getImageControl()->removeImage(pixmap.focusedDesktop);
-
-  /* destroy windows */
-  XDestroyWindow(getXDisplay(),framewin);
-  /* destroy windows */
-  delete windowList;
-  delete desktopList;
+	delete windowList;
+	delete desktopList;
 }
 
-void ToolWindow::moveWinToDesktop(Window win,DesktopList *desktop) {
+void ToolWindow::moveWinToDesktop(Window win, DesktopWindow *desktop) 
+{
 
-  LinkedListIterator<WindowList> win_it(windowList);
-  for (; win_it.current(); win_it++)
-    if ((win_it.current()->win) == win)
-      break;
-  if (win_it.current()) {
-    if ((desktop->desktop_nr!=win_it.current()->desktop_nr) 
-                    & (!win_it.current()->sticky)) {
-
-        XUnmapWindow(getXDisplay(),win_it.current()->pager_win);
-        XReparentWindow(getXDisplay(),win_it.current()->pager_win,
-                        desktop->win,win_it.current()->pager_x,
-                        win_it.current()->pager_y);
-        XMapWindow(getXDisplay(),win_it.current()->pager_win);
-        win_it.current()->desktop_nr=desktop_nr;
-    }
-  }
-}
-
-int ToolWindow::getWindowGeometry(struct WindowList  *winlist) {
-  unsigned int border_width,depth;
-  Window root_return,child_return;
-  int x_return,y_return;
-  int status;
-
-  status = XGetGeometry(getXDisplay(),winlist->win,&root_return,&x_return,
-                        &y_return,&winlist->width,&winlist->height,
-                        &border_width,&depth);
-  if (status) {
-    XTranslateCoordinates(getXDisplay(),winlist->win,root_return,x_return,
-                          y_return,&winlist->x_position,&winlist->y_position,
-                          &child_return);
-    return 1;
-  }
-  return 0;
-}
-
-
-void ToolWindow::reconfigure(void) {
-  /* destroy pixmaps */
-  getImageControl()->removeImage(pixmap.frame);
-  getImageControl()->removeImage(pixmap.desktop);
-  getImageControl()->removeImage(pixmap.window);
-  if (pixmap.focusedWindow) 
-    getImageControl()->removeImage(pixmap.focusedWindow);
-  if (pixmap.focusedDesktop) 
-    getImageControl()->removeImage(pixmap.focusedDesktop);
-
-  resource->Reload();
-
-  MakeWindow(True);
+	PagerWindow pager_window = findPagerWindow(win);
   
+//  LinkedListIterator<WindowList> win_it(windowList);
+//  for (; win_it.current(); win_it++)
+//    if ((win_it.current()->win) == win)
+//      break;
+	if (pager_window) {
+		if ((desktop->desktop_nr != pager_window.desktopNr()) & (!pager_window.isSticky())) {
 
-  desktop_nr=0;
-  {  
-  LinkedListIterator<DesktopList> desktop_it(desktopList);
-  for (; desktop_it.current(); desktop_it++)
-    addDesktopWindow(desktop_it.current(),True);
-  }
-  LinkedListIterator<WindowList> win_it(windowList);
-  for (; win_it.current(); win_it++)
-    addFrameWindow(win_it.current(),0,True);
-
-  XClearWindow(getXDisplay(), framewin);
+			XUnmapWindow(XDisplay(), pager_window.pagerWindow());
+			XReparentWindow(XDisplay(), pager_window.pagerWindow(),
+					desktop.window(), pager_window.x(), pager_window.y());
+			XMapWindow(XDisplay(), pager_window.pagerWindow());
+				   pager_window.setDesktopNr(desktop_nr);
+		}
+	}
 }
 
-void ToolWindow::raiseWindow(Window win) {
-  LinkedListIterator<WindowList> win_it(windowList);
-  for (; win_it.current(); win_it++)
-    if ((win_it.current()->win) == win)
-      break;
+PagerWindow &ToolWindow::findPagerWindow(Window win)
+{
+	std::list<PagerWindow>::iterator it = pager_window_list.begin();
 
-  if (win_it.current()) {
-    WindowList *tmp = win_it.current();
-    XRaiseWindow(getXDisplay(),tmp->pager_win);
-  }
+	for (; it != pager_window_list.end(); it++) {
+		if ((*it).window == win) {
+			return (*it);
+		}
+	}
+	return NULL;
 }
 
-void ToolWindow::lowerWindow(Window win) {
-  LinkedListIterator<WindowList> win_it(windowList);
-  for (; win_it.current(); win_it++)
-    if ((win_it.current()->win) == win)
-      break;
-
-  if (win_it.current()) {
-    WindowList *tmp = win_it.current();
-    XLowerWindow(getXDisplay(),tmp->pager_win);
-  }
-}
-
-void ToolWindow::focusWindow(Window win) {
-  WindowList *tmp;
 
 
-  if (focuswin) {
-    LinkedListIterator<WindowList> old_it(windowList);
-    for (; old_it.current(); old_it++) {
-      if (old_it.current()->win == focuswin) {
-        if (resource->getFocusStyle()==border)
-          XSetWindowBorder(getXDisplay(),old_it.current()->pager_win,
-                           resource->pagerwin.inactiveColor.getPixel());
-         else
-          XSetWindowBackgroundPixmap(getXDisplay(), 
-                                     old_it.current()->pager_win,
-                                     pixmap.window);
+void ToolWindow::reconfigure(void) 
+{
+	resource->Reload();
 
-         old_it.current()->focused=False;
-      
-         XClearWindow(getXDisplay(),old_it.current()->pager_win);
-      }
-    }
-  }
- 
-  LinkedListIterator<WindowList> win_it(windowList);
-  for (; win_it.current(); win_it++) {
-    if ((win_it.current()->win) == win) {
-      tmp = win_it.current();
+	MakeWindow(true);
   
-      
-      if (resource->getFocusStyle()==border)
-        XSetWindowBorder(getXDisplay(),tmp->pager_win,resource->pagerwin.
-                         activeColor.getPixel());
-      else 
-        XSetWindowBackgroundPixmap(getXDisplay(), tmp->pager_win,
-                                   pixmap.focusedWindow);
-    
-      XClearWindow(getXDisplay(),tmp->pager_win);
-      tmp->focused=True;
-      focuswin=tmp->win;
-    }
-  }
+	desktop_nr = 0;
+
+	std::list<DesktopWindow>::iterator dit = desktop_window_list.begin();
+	for (; dit != desktop_window_list.end(); dit++) {
+		(*dit).reconfigure();
+	}
+  	std::list<PagerWindow>::iterator pit = desktop_window_list.begin();
+	for (; pit != desktop_window_list.end(); pit++) {
+		(*pit).reconfigure();
+	}
+
+  	frame_window.reconfigure();
 }
 
-void ToolWindow::desktopChange(int desktop_nr) {
-  Window win;
-
-  if (resource->getDesktopFocusStyle()!=none) {
-    LinkedListIterator<DesktopList> win_it(desktopList);
-    if (current_desktop_nr!=-1) {
-      win_it.set(current_desktop_nr);
-      win = win_it.current()->win;
-      if (resource->getDesktopFocusStyle()==border)
-        XSetWindowBorderWidth(getXDisplay(),win,0);
-      else
-        XSetWindowBackgroundPixmap(getXDisplay(), win, pixmap.desktop);
-      XClearWindow(getXDisplay(),win);
-    }
-    win_it.set(desktop_nr);
-    win = win_it.current()->win;
-    if (resource->getDesktopFocusStyle()==border)
-      XSetWindowBorderWidth(getXDisplay(),win,1);
-    else
-      XSetWindowBackgroundPixmap(getXDisplay(), win, pixmap.focusedDesktop);
-     XClearWindow(getXDisplay(),win);
-  }
-    current_desktop_nr=desktop_nr;
+void ToolWindow::raiseWindow(Window win) 
+{
+	PagerWindow pager_window = findPagerWindow(win); 	
+	if (pager_window)
+		XRaiseWindow(XDisplay(), pager_window.pagerWindow());
 }
 
-int ToolWindow::winOnDesktop(Window win) {
-  LinkedListIterator<WindowList> win_it(windowList);
-  for (; win_it.current(); win_it++)
-    if ((win_it.current()->pager_win) == win)
-      break;
+void ToolWindow::lowerWindow(Window win) 
+{
+	PagerWindow pager_window = findPagerWindow(win); 	
+	if (pager_window)
+    		XLowerWindow(XDisplay(), pager_window.pagerWindow());
+}
 
-  if (win_it.current())
-    return(win_it.current()->desktop_nr);
 
-  return(0);
+
+void ToolWindow::focusWindow(Window win) 
+{
+	/* remove focus from previously focused window */
+	if (focuswin) {
+	  	focuswin.clearFocus();
+	}
+
+	PagerWindow pager_window = findPagerWindow(win);
+	
+     	if (pager_window) { 
+	  	pager_window.setFocus();
+		focuswin = pager_window;
+	}
+}
+
+void ToolWindow::desktopChange(int desktop_nr) 
+{
+	Window win;
+
+	if (resource->getDesktopFocusStyle() != none) {
+		
+		if (current_desktop_nr != -1) {
+			DesktopWindow desktop_window = findDesktopWindow(current_desktop_nr);
+			if (desktop_window)
+				desktop_window.clearFocus();
+		}
+		
+		DesktopWindow desktop_window = findDesktopWindow(desktop_nr);
+		if (desktop_window)
+			desktop_window.setFocus();	
+	}
+	current_desktop_nr = desktop_nr;
+}
+
+DesktopWindow &ToolWindow::findDesktopWindow(int desktop_nr)
+{
+	std::list<DesktopWindow>::iterator it = desktop_window_list.begin();
+
+	for (; it != desktop_window_list.end(); it++) {
+		if ((*it).desktopId() == desktop_nr) {
+			return (*it);
+		}
+	}
+	return NULL;
+}
+
+
+int ToolWindow::winOnDesktop(Window win) 
+{
+	PagerWindow pager_window = findPagerWindow(win);
+
+	if (pager_window)
+		return pager_window.desktopId();
+
+	return(0);
 }
 
 void ToolWindow::removeWindow(Window win) {
-  WindowList *tmp=0;
-  {
-  LinkedListIterator<WindowList> win_it(windowList);
-  for (; win_it.current(); win_it++)
-    if ((win_it.current()->win) == win)
-      break;
 
-  if (win_it.current()) {
-    tmp = win_it.current();
-  
-  
-    if (tmp->sticky) wminterface->removeSticky(tmp->win,tmp->desktop_nr);
-    windowList->remove(tmp);
-    if (tmp->focused) focuswin=0;
-    XDestroyWindow(getXDisplay(),tmp->pager_win);
-    delete tmp;
-  }
-  }
+  	PagerWindow pager_window = findPagerWindow(win);
+
+	if (pager_window) {
+	  	if (pager_window == focuswin)
+			focuswin = NULL;
+		pager_window_list.remove(pager_window);
+		delete pager_window;
+	}
+	//if (tmp->sticky) wminterface->removeSticky(tmp->win,tmp->desktop_nr);
 }
 
 void ToolWindow::removeDesktopWindow()
 {
-   /* delete last */
-  DesktopList *tmp = new DesktopList;
-  tmp= desktopList->last();
-  LinkedListIterator<WindowList> win_it(windowList);
-  for (; win_it.current(); win_it++)
-    if ((win_it.current()->sticky && 
-      win_it.current()->desktop_nr==tmp->desktop_nr))
-      break;
-              
-  if (win_it.current()) {
-    WindowList *sticky=win_it.current();
-    windowList->remove(sticky);
-    XDestroyWindow(getXDisplay(),sticky->pager_win);
-    delete sticky;
-  }
-  
-  desktopList->remove(tmp);
-  XUnmapWindow(getXDisplay(),tmp->win);
-  XDestroyWindow(getXDisplay(),tmp->win);
-  delete tmp;
-  if (resource->position.vertical) {
-   if (number_of_desktops<resource->columns)
-    frame.width=(unsigned int)(resource->desktopSize.width + 
-                resource->frame.bevelWidth)*
-                (number_of_desktops%resource->columns) + 
-                resource->frame.bevelWidth;
-   else
-    frame.width=(unsigned int)(resource->desktopSize.width + 
-                 resource->frame.bevelWidth)*
-                 resource->columns + resource->frame.bevelWidth;
-
-    frame.height=(unsigned int)(((number_of_desktops-1)/
-                  resource->columns)+1)*
-                  (resource->desktopSize.height + 
-                   resource->frame.bevelWidth) + 
-                   resource->frame.bevelWidth;
-  } else {
-    frame.width=(unsigned int)((number_of_desktops-1)/resource->rows+1) *
-                (resource->desktopSize.width + 
-                 resource->frame.bevelWidth) + 
-                 resource->frame.bevelWidth;
-   
-    if (number_of_desktops<resource->rows)
-      frame.height=(unsigned int)(resource->desktopSize.height+
-                  resource->frame.bevelWidth)*
-                  (number_of_desktops%resource->rows) + 
-                  resource->frame.bevelWidth;
-    else
-      frame.height=(unsigned int)(resource->desktopSize.height+
-                  resource->frame.bevelWidth)*
-                  resource->rows + resource->frame.bevelWidth;
-  }
-
-  if (resource->position.mask & XNegative) {
-    frame.x = getCurrentScreenInfo()->getWidth() +
-              resource->position.x - frame.width;
-  }
-  if (resource->position.mask & YNegative) {
-    frame.y = getCurrentScreenInfo()->getHeight() +
-              resource->position.y - frame.height;
-  }
-              
-  if (!withdrawn)
-    XMoveResizeWindow(getXDisplay(), framewin,frame.x,frame.y,
-                      frame.width,frame.height);
-  else
-    XResizeWindow(getXDisplay(),framewin,frame.width,frame.height);
-
-  if (!shape)
-    XSetWindowBackgroundPixmap(getXDisplay(), framewin, pixmap.frame);
-
-  XClearWindow(getXDisplay(),framewin);
-  desktop_nr--;
+	/* delete last */
+  	DesktopWindow dekstop_window = desktop_window_list.back();
+  	dekstop_window_list.pop_back();	
+	delete desktop_window;
+ 
+    	desktop_nr--;
+	frame_window->resize();
 }
 
-void ToolWindow::addDesktopWindow(struct DesktopList *tmp,bool reconfigure) {
-  XSetWindowAttributes attrib;
-  int row,column;
-  unsigned long create_mask = CWBackPixmap|CWCursor|CWEventMask|CWBorderPixel;
 
-  attrib.background_pixmap = ParentRelative;
+//void ToolWindow::addFrameWindow(struct WindowList *window,Window desktopWin,bool reconfigure) 
+//{
+//}
 
-  attrib.border_pixel=resource->desktopwin.activeColor.getPixel();
-  attrib.cursor = getSessionCursor();
-  attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
-                      FocusChangeMask | StructureNotifyMask|
-                      SubstructureRedirectMask | ButtonMotionMask;
+FrameWindow::FrameWindow
+{
+}
 
-  tmp->width=resource->desktopSize.width;
-  tmp->height=resource->desktopSize.height;
-  
-  if (resource->position.vertical) {
-    row=desktop_nr/resource->columns;
-    column=desktop_nr%resource->columns +1;
+FrameWindow::~FrameWindow()
+{
+	XUnmapWindow(XDisplay(), framewin);
+	/* destroy pixmaps */
+	if (pixmap) bt::PixmapCache::release(pixmap.frame);
+	/* destroy windows */
+	XDestroyWindow(XDisplay(),framewin);
+}
 
-    tmp->x=(resource->frame.bevelWidth + resource->desktopSize.width)* 
-            (column-1) + resource->frame.bevelWidth;
-    tmp->y = resource->frame.bevelWidth +
-             ((row) * (resource->desktopSize.height +
-              resource->frame.bevelWidth));
+FrameWindow::buildWindow(bool reconfigure)
+{
+	XSetWindowAttributes attrib;
+	XWMHints wmhints;
+	XClassHint classhints;
+	XTextProperty windowname;
 
-  if (number_of_desktops<resource->columns)
-    frame.width=(unsigned int)(resource->desktopSize.width + 
-                resource->frame.bevelWidth)*
-                (number_of_desktops%resource->columns) + 
-                resource->frame.bevelWidth;
-   else
-    frame.width=(unsigned int)(resource->desktopSize.width + 
-                resource->frame.bevelWidth)*
-                resource->columns + resource->frame.bevelWidth;
+	unsigned long create_mask = CWBackPixmap | CWBorderPixel |
+				    CWCursor | CWEventMask;
 
-   frame.height=(unsigned int)(((number_of_desktops-1)/resource->columns+1)*
-                   (resource->desktopSize.height + 
-                   resource->frame.bevelWidth) + resource->frame.bevelWidth);
-  }
-  else {
-    column=desktop_nr/resource->rows;
-    row=desktop_nr%resource->rows +1;
+	if (withdrawn) {
+		wmhints.initial_state = WithdrawnState;
+	} else {
+		wmhints.initial_state = NormalState;
+	}
 
-    tmp->x=(resource->frame.bevelWidth + resource->desktopSize.width)* 
-            column + resource->frame.bevelWidth;
-
-    tmp->y = resource->frame.bevelWidth +
-             ((row-1) * (resource->desktopSize.height +
-              resource->frame.bevelWidth));
-
-    frame.width=(unsigned int)((number_of_desktops-1)/resource->rows+1) *
-                 (resource->desktopSize.width + 
-                  resource->frame.bevelWidth) + resource->frame.bevelWidth;
-   
-    if (number_of_desktops<resource->rows)
-       frame.height=(unsigned int)(resource->desktopSize.height+
-                  resource->frame.bevelWidth)*
-                  (number_of_desktops%resource->rows) + 
-                  resource->frame.bevelWidth;
-    else
-      frame.height=(unsigned int)(resource->desktopSize.height+
-                  resource->frame.bevelWidth)*
-                  resource->rows + resource->frame.bevelWidth;
-  }
-  frame.x=resource->position.x;
-  frame.y=resource->position.y;
-
-  if (resource->position.mask & XNegative) {
-    frame.x = getCurrentScreenInfo()->getWidth() + 
-              resource->position.x - frame.width;
-  }
-  if (resource->position.mask & YNegative) {
-    frame.y = getCurrentScreenInfo()->getHeight() + 
-              resource->position.y - frame.height;
-  }
+	attrib.background_pixmap = ParentRelative;
+	attrib.border_pixel=resource->desktopwin.activeColor.getPixel();
 
 
-  if (!withdrawn)
-    XMoveResizeWindow(getXDisplay(), framewin,frame.x,
-                    frame.y,frame.width,frame.height);
-  else
-    XResizeWindow(getXDisplay(),framewin,frame.width,frame.height);
-
-  if (!reconfigure)
-    tmp->win = XCreateWindow(getXDisplay(), framewin,tmp->x,tmp->y,tmp->width,
-                           tmp->height,0, getCurrentScreenInfo()->getDepth(),
-                           InputOutput, getCurrentScreenInfo()->getVisual(),
-                           create_mask,&attrib);
-  else
-      XMoveResizeWindow(getXDisplay(),tmp->win,tmp->x,tmp->y,tmp->width,tmp->height);
-
-  getImageControl()->removeImage(pixmap.frame);
-  pixmap.frame = getImageControl()->renderImage(frame.width, frame.height,
+	pixmap.frame = getImageControl()->renderImage(frame.width, frame.height,
                  &resource->frame.texture);
 
-  if (!shape)
-    XSetWindowBackgroundPixmap(getXDisplay(), framewin, pixmap.frame);
-
-  XSetWindowBackgroundPixmap(getXDisplay(), tmp->win, pixmap.desktop);
-  XMapSubwindows(getXDisplay(), framewin);
-  XClearWindow(getXDisplay(),framewin);
-  XClearWindow(getXDisplay(),tmp->win );
-  tmp->desktop_nr=desktop_nr++;
-}
-
-void ToolWindow::addFrameWindow(struct WindowList *window,Window desktopWin,bool reconfigure) {
-  XSetWindowAttributes attrib;
-  unsigned long create_mask = CWBackPixmap|CWCursor|CWBorderPixel;
-  double xdiv,ydiv;
-
-  xdiv=10;
-  ydiv=10;
-
-  if (!desktopWin) {
-    LinkedListIterator<DesktopList> desktop_it(desktopList);
-    desktop_it.set(window->desktop_nr);
-    desktopWin = desktop_it.current()->win;
-  }
-
-  attrib.background_pixmap = ParentRelative;
-  attrib.border_pixel=resource->pagerwin.inactiveColor.getPixel();
-  attrib.cursor = getSessionCursor();
-
-  xdiv=(double)resource->desktopSize.width/
-          getCurrentScreenInfo()->getWidth();
-  ydiv=(double)resource->desktopSize.height/
-          getCurrentScreenInfo()->getHeight();
-  window->pager_x=(int)(window->x_position*xdiv);
-  window->pager_y=(int)(window->y_position*ydiv);
-  window->pager_width=(unsigned int)(window->width*xdiv);
-  window->pager_height=(unsigned int)(window->height*ydiv);
-  if (window->pager_width==0)   window->pager_width=1;
-  if (window->pager_height==0) window->pager_height=1;
-
-  
-  if (!reconfigure) {
-    window->pager_win = XCreateWindow(getXDisplay(), desktopWin,
-                                    window->pager_x,window->pager_y,
-                                    window->pager_width,window->pager_height,
-                                    1, getCurrentScreenInfo()->getDepth(), 
-                                    InputOutput,
-                                    getCurrentScreenInfo()->getVisual(), 
-                                    create_mask,&attrib);
-    XSelectInput(getXDisplay(),window->win,
-                 PropertyChangeMask|StructureNotifyMask);
-  }
-  else
-    XMoveResizeWindow(getXDisplay(),window->pager_win,window->pager_x,
-                      window->pager_y,window->pager_width,window->pager_height);
-  if (!window->focused)
-     XSetWindowBackgroundPixmap(getXDisplay(), window->pager_win,
-                                pixmap.window);
-  else
-     XSetWindowBackgroundPixmap(getXDisplay(), window->pager_win,
-                                pixmap.focusedWindow);
-  if (!window->icon)
-    XMapWindow(getXDisplay(),window->pager_win);
-  XClearWindow(getXDisplay(),window->pager_win );
-}
-
-void ToolWindow::MakeWindow(bool reconfigure) {
-  XSetWindowAttributes attrib;
-  XWMHints wmhints;
-  XClassHint classhints;
-  XTextProperty windowname;
-
-  unsigned long create_mask = CWBackPixmap|CWBorderPixel|
-                              CWCursor|CWEventMask;
-
-  if (resource->position.vertical) {
-
-    if (number_of_desktops<resource->columns)
-      frame.width=(unsigned int)(resource->desktopSize.width + 
-                  resource->frame.bevelWidth)*
-                  (number_of_desktops%resource->columns) + 
-                  resource->frame.bevelWidth;
-     else
-      frame.width=(unsigned int)(resource->desktopSize.width + 
-                  resource->frame.bevelWidth)*
-                  resource->columns + resource->frame.bevelWidth;
-
-     frame.height=(unsigned int)(((number_of_desktops-1)/resource->columns+1)*
-                     (resource->desktopSize.height + 
-                     resource->frame.bevelWidth) + resource->frame.bevelWidth);
-
-  }
-  else {
-    frame.width=(unsigned int)((number_of_desktops-1)/resource->rows+1) *
-                (resource->desktopSize.width + 
-                 resource->frame.bevelWidth) + resource->frame.bevelWidth;
-   
-    if (number_of_desktops<resource->rows)
-       frame.height=(unsigned int)(resource->desktopSize.height+
-                  resource->frame.bevelWidth)*
-                  (number_of_desktops%resource->rows) + 
-                  resource->frame.bevelWidth;
-    else
-      frame.height=(unsigned int)(resource->desktopSize.height+
-                  resource->frame.bevelWidth)*
-                  resource->rows + resource->frame.bevelWidth;
-
-  }
-  frame.x=resource->position.x;
-  frame.y=resource->position.y;
-  if (resource->position.mask & XNegative) {
-    frame.x = getCurrentScreenInfo()->getWidth() + 
-              resource->position.x - frame.width;
-  }
-
-  if (resource->position.mask & YNegative) {
-    frame.y = getCurrentScreenInfo()->getHeight() +
-              resource->position.y - frame.height;
-
-  }
-
-  if (withdrawn) {
-    wmhints.initial_state = WithdrawnState;
-  } else {
-	 	wmhints.initial_state = NormalState;
-  }
-
-  attrib.background_pixmap = ParentRelative;
-  attrib.border_pixel=resource->desktopwin.activeColor.getPixel();
-
-
-  pixmap.frame = getImageControl()->renderImage(frame.width, frame.height,
-                 &resource->frame.texture);
-
-  pixmap.window =	getImageControl()->renderImage(resource->desktopSize.width,
-                  resource->desktopSize.height,
-                  &resource->pagerwin.texture);
-
-  if (resource->getFocusStyle()==texture)
-    pixmap.focusedWindow =	
-          getImageControl()->renderImage(resource->desktopSize.width,
-                  resource->desktopSize.height,
-                  &resource->pagerwin.focusedTexture);
-
-  
-  pixmap.desktop =	getImageControl()->renderImage(resource->desktopSize.width,
-                   resource->desktopSize.height,
-                   &resource->desktopwin.texture);
-
-  if (resource->getDesktopFocusStyle()==texture)
-    pixmap.focusedDesktop =	
-          getImageControl()->renderImage(resource->desktopSize.width,
-                  resource->desktopSize.height,
-                  &resource->desktopwin.focusedTexture);
-
-  
-  attrib.cursor = getSessionCursor();
-  attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
+	attrib.cursor = getSessionCursor();
+	attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
                       FocusChangeMask | StructureNotifyMask|
                       SubstructureRedirectMask;
 
-  if (!reconfigure) {
-    framewin = XCreateWindow(getXDisplay(), 
+	calcSize();
+	
+	if (!reconfigure) {
+		win = XCreateWindow(getXDisplay(), 
                              getCurrentScreenInfo()->getRootWindow(), frame.x,
                              frame.y, frame.width,
                              frame.height, 0, 
@@ -598,67 +484,123 @@ void ToolWindow::MakeWindow(bool reconfigure) {
                              InputOutput,
                              getCurrentScreenInfo()->getVisual(), 
                              create_mask, &attrib);
-  } else if (!withdrawn) {
-    XMoveResizeWindow(getXDisplay(), framewin, frame.x,frame.y,
+	} else if (!withdrawn) {
+		XMoveResizeWindow(getXDisplay(), framewin, frame.x,frame.y,
                       frame.width,frame.height);
 
-  } else {
-    XResizeWindow(getXDisplay(),framewin,frame.width,frame.height);
-  }
+	} else {
+		XResizeWindow(getXDisplay(),framewin,frame.width,frame.height);
+	}
 
-  char *name=BBTOOL;
-  XSizeHints sizehints;
+	char *name=BBTOOL;
+	XSizeHints sizehints;
 
-  wmhints.flags = StateHint | InputHint;
-  wmhints.input = False;
+	wmhints.flags = StateHint | InputHint;
+	wmhints.input = False;
  
-  classhints.res_name=BBTOOL;
-  classhints.res_class="bbtools";
+	classhints.res_name = BBTOOL;
+	classhints.res_class = "bbtools";
           
-  sizehints.x=frame.x;//getResource()->position.x;
-  sizehints.y=frame.y;//getResource()->position.y;
+	sizehints.x = frame.x;//getResource()->position.x;
+	sizehints.y = frame.y;//getResource()->position.y;
 
-  sizehints.max_width=sizehints.min_width=frame.width;
-  sizehints.max_height=sizehints.min_height=frame.height;
-  sizehints.flags=USPosition|PMinSize|PMaxSize;
+	sizehints.max_width = sizehints.min_width=frame.width;
+	sizehints.max_height = sizehints.min_height=frame.height;
+	sizehints.flags = USPosition | PMinSize | PMaxSize;
 
-  XStringListToTextProperty(&name,1,&windowname);
-  XSetWMProperties(getXDisplay(),framewin,&windowname,NULL,getArgv(),getArgc(),
+	XStringListToTextProperty(&name, 1, &windowname);
+	XSetWMProperties(getXDisplay(),framewin,&windowname,NULL,getArgv(),getArgc(),
                   &sizehints,&wmhints,&classhints);
-  Atom wmproto[2];
-  wmproto[0]=wm_delete_window;
-  wmproto[1]=getBlackboxStructureMessagesAtom();
-  XSetWMProtocols(getXDisplay(), framewin,wmproto, 2);
+	Atom wmproto[1];
+	wmproto[0] = wm_delete_window;
+  	XSetWMProtocols(XDisplay(), framewin, wmproto, 1);
 
-  if (!decorated&&!withdrawn) {
-    BlackboxHints net_hints;
-    net_hints.decoration=DecorNone;
-    net_hints.attrib= AttribOmnipresent;
-    net_hints.flags=AttribDecoration|AttribOmnipresent;
-    XChangeProperty(getXDisplay(), framewin, getBlackboxHintsAtom(),
-                getBlackboxHintsAtom(), 32, PropModeReplace,
-                (unsigned char *) &net_hints,  PropBlackboxHintsElements);
-  }
- 
+	if (!shape) {
+		XSetWindowBackgroundPixmap(getXDisplay(), framewin, pixmap.frame);
+	}
 
-  
-  if (!shape) {
-    XSetWindowBackgroundPixmap(getXDisplay(), framewin, pixmap.frame);
-  }
+	if (!withdrawn && resource->report.auto_raise) {
+		XRaiseWindow(getXDisplay(), framewin);
+		lower = false;
+	}
+	else lower=True;
 
-  if (!withdrawn && resource->report.auto_raise) {
-    XRaiseWindow(getXDisplay(),framewin);
-    lower=False;
-  }
-  else lower=True;
+	XClearWindow(getXDisplay(), framewin);
+	XMapWindow(getXDisplay(), framewin);
+	XMapSubwindows(getXDisplay(), framewin);
+}
 
-  XClearWindow(getXDisplay(), framewin);
-  XMapWindow(getXDisplay(), framewin);
-  XMapSubwindows(getXDisplay(), framewin);
+FrameWindow::resize(void)
+{
+	size();
+	if (!withdrawn)
+		XMoveResizeWindow(bbtool->XDisplay(), bbtool->frameWindow.window(), bbtool->frameWindow.x(),
+				  bbtool->frameWindow.y(), bbtool->frameWindow.width(), 
+				  bbtool->frameWindow.height());
+	else
+		XResizeWindow(bbtool->XDisplay(), bbtool->frameWindow.window(), bbtool->frameWindow.width(),
+			      bbtool->frameWindow.height());
 
 }
 
-void ToolWindow::CheckConfig()
+FrameWindow::calcSize(bool reconfigure)
+{
+
+	if (resource->position.vertical) {
+
+		if (number_of_desktops < resource->columns)
+			_width = (unsigned int)(bbtool->getResource()->desktopSize.width + 
+				bbtool->getResource->frame.bevelWidth) *
+				(number_of_desktops % bbtool->getResource()->columns) + 
+				bbtool->getResource()->frame.bevelWidth;
+		else
+			_width = (unsigned int)(bbtool->getResource()->desktopSize.width + 
+				 bbtool->getResource()->frame.bevelWidth) *
+				 bbtool->getResource()->columns + bbtool->getResource()->frame.bevelWidth;
+
+			_height = (unsigned int)(((bbtool->numberOfDesktops() - 1) / bbtool->getResource()->columns + 1)*
+				  (bbtool->getResource()->desktopSize.height + 
+				   bbtool->getResource()->frame.bevelWidth) + bbtool->getResource()->frame.bevelWidth);
+
+	} else {
+		_width = (unsigned int)((bbtool->numberOfDesktops - 1) / bbtool->getResource()->rows + 1) *
+		         (bbtool->getResource()->desktopSize.width + 
+		         bbtool->getResource()->frame.bevelWidth) + bbtool->getResource()->frame.bevelWidth;
+   
+		if (bbtool->numberOfDesktops < bbtool->getResource()->rows)
+			_height = (unsigned int)(bbtool->getResource()->desktopSize.height +
+				  bbtool->getResource()->frame.bevelWidth)*
+				  (bbtool->numberOfDesktops % bbtool->getResource()->rows) + 
+				  bbtool->getResource()->frame.bevelWidth;
+		else
+			_height = (unsigned int)(bbtool->getResource()->desktopSize.height +
+				  bbtool->getResource()->frame.bevelWidth) *
+				  bbtool->getResource()->rows + resource->frame.bevelWidth;
+
+	}
+
+	_x = bbtool->getResource()->position.x;
+	_y = bbtool->getResource()->position.y;
+
+	if (bbtool->getResource()->position.mask & XNegative) {
+		_x = bbtool->getCurrentScreenInfo()->width() + 
+		     bbtool->getResource()->position.x - _width;
+	}
+
+	if (bbtool->getResource()->position.mask & YNegative) {
+		_y = bbtool->getCurrentScreenInfo()->height() +
+		     bbtool->getResource()->position.y - _height;
+
+	}
+
+
+}
+
+void ToolWindow::MakeWindow(bool reconfigure) 
+{
+}
+
+/*void ToolWindow::CheckConfig()
 {
 	struct stat file_status;
 
@@ -672,7 +614,7 @@ void ToolWindow::CheckConfig()
 		resource->style.mtime=file_status.st_mtime;
 		reconfigure();
 	}
-}
+}*/
 
 void ToolWindow::process_event(XEvent *Event) {
   static bool moved;
