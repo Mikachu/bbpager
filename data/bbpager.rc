@@ -14,13 +14,18 @@ bbpager.position:               +0-0
 bbpager.desktop.width:          40
 bbpager.desktop.height:         30
 
-!** define the number of columns, the number of row will grow as
-!** desktops are added (vertical orientation) 
-!bbpager.columns:               1
+!** desktop orientation, horizontal or vertical
+!bbpager.desktop.orientation:	horizontal
 
-!** define the number of rows, the number of columns will grow as
-!** desktops are added (horizontal orientation) 
-!bbpager.rows:                  1
+!** define the maximum number of columns (only for horizontal orientation)
+!** If the number of columns is greater than this number a row will be 
+!** added.
+!bbpager.desktop.columns:               1
+
+!** define the maximum number of rows (only for vertical orientation)
+!** If the number of rows is greater than this number a column will be 
+!** added.
+!bbpager.desktop.rows:                  1
 
 !** bbpager on top of other windows **
 bbpager.raised:                 True
