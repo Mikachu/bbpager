@@ -13,19 +13,19 @@ which looks a lot like the toolbar.
 Configuration options can be changed in bbpager.bb. 
 Most likely you want to change some of these options, 
 
-The global configuration file can be found in $datadir/bbtools/bbpager.bb
+The global configuration file can be found in $datadir/bbtools/bbpager.rc
 A local configuration can be made by copying the bbpager.bb file to 
-$HOME/.bbtools/bbpager.bb and editing it.
+$HOME/.bbtools/bbpager.rc and editing it.
 
 
 Users other Window managers:
 
-Configuration options can be changed in bbpager.bb. 
+Configuration options can be changed in bbpager.rc. 
 Most likely you want to change some of these options, 
 
-The global configuration file can be found in $datadir/bbtools/bbpager.nobb
+The global configuration file can be found in $datadir/bbtools/bbpager.rc  
 A local configuration can be made by copying the bbpager.nobb file to 
-$HOME/.bbtools/bbpager.nobb and editing it.
+$HOME/.bbtools/bbpager.rc and editing it.
 
 
 ** Reconfigure bbpager.**
