@@ -54,8 +54,8 @@ ToolWindow::ToolWindow(Configuration cml_options):
 
     resource = new Resource(this, config.rcFilename());
 
-    _netwm = new bt::Netwm(XDisplay());
-    _netwm->readNumberOfDesktops(current_screen_info.rootWindow(), &number_of_desktops);
+    _ewmh = new bt::EWMH(display());
+    _ewmh->readNumberOfDesktops(current_screen_info.rootWindow(), &number_of_desktops);
 
     frame_window = new FrameWindow(this);
 
@@ -67,7 +67,7 @@ ToolWindow::ToolWindow(Configuration cml_options):
     for (i = 0; i < number_of_desktops; i++) {
         addDesktopWindow(i);
     }
-    _netwm->readCurrentDesktop(current_screen_info.rootWindow(), &current_desktop_nr);
+    _ewmh->readCurrentDesktop(current_screen_info.rootWindow(), &current_desktop_nr);
     desktopChange(current_desktop_nr);
     wminterface->updateWindowList();
     Window active;
@@ -360,10 +360,10 @@ void FrameWindow::buildWindow(bool reconfigure)
 
 
         if (!bbtool->configuration().isDecorated() && !bbtool->configuration().isWithdrawn()) {
-            bt::Netwm::AtomList window_type_atom;
-            window_type_atom.push_back(bbtool->netwm()->wmWindowTypeDock());
+            bt::EWMH::AtomList window_type_atom;
+            window_type_atom.push_back(bbtool->ewmh()->wmWindowTypeDock());
 
-            XChangeProperty(display, win, bbtool->netwm()->wmWindowType(), XA_ATOM,
+            XChangeProperty(display, win, bbtool->ewmh()->wmWindowType(), XA_ATOM,
                             32, PropModeReplace,
                             reinterpret_cast<unsigned char*>(&(window_type_atom[0])), window_type_atom.size());
   
@@ -371,16 +371,16 @@ void FrameWindow::buildWindow(bool reconfigure)
        }
        if (!bbtool->configuration().isWithdrawn()) {
             unsigned int dekstop_nr = static_cast<unsigned int>(-1);
-            XChangeProperty(display, win, bbtool->netwm()->wmDesktop(), XA_CARDINAL,
+            XChangeProperty(display, win, bbtool->ewmh()->wmDesktop(), XA_CARDINAL,
                             32, PropModeReplace,
                             reinterpret_cast<unsigned char*>(&dekstop_nr), 1);
 
-             bt::Netwm::AtomList window_state_atom;
-            window_state_atom.push_back(bbtool->netwm()->wmStateSticky());
-            window_state_atom.push_back(bbtool->netwm()->wmStateSkipTaskbar());
-            window_state_atom.push_back(bbtool->netwm()->wmStateSkipPager());
+             bt::EWMH::AtomList window_state_atom;
+            window_state_atom.push_back(bbtool->ewmh()->wmStateSticky());
+            window_state_atom.push_back(bbtool->ewmh()->wmStateSkipTaskbar());
+            window_state_atom.push_back(bbtool->ewmh()->wmStateSkipPager());
 
-            XChangeProperty(display, win, bbtool->netwm()->wmState(), XA_ATOM,
+            XChangeProperty(display, win, bbtool->ewmh()->wmState(), XA_ATOM,
                           32, PropModeReplace,
                             reinterpret_cast<unsigned char*>(&(window_state_atom[0])), window_state_atom.size());
        } 

@@ -23,7 +23,7 @@
 
 #include "bbpager.h"
 //#include "EventHandler.hh"
-#include "Netwm.hh"
+#include "EWMH.hh"
 
 class Resource;
 class ToolWindow;
@@ -45,7 +45,7 @@ class WMInterface : public bt::EventHandler
         void changeIconState(Window);
         void windowAttributeChange(Window);
 
-        int getNumberOfDesktops(void) { unsigned int number; netwm->readNumberOfDesktops(root_window, &number); return(number); }
+        int getNumberOfDesktops(void) { unsigned int number; ewmh->readNumberOfDesktops(root_window, &number); return(number); }
         int getCurrentDesktop(void);
         void changeDesktop(int);
         void updateWindowList(void);
@@ -62,7 +62,7 @@ class WMInterface : public bt::EventHandler
         ToolWindow *bbtool;
 
         Window root_window;
-        bt::Netwm *netwm;
+        bt::EWMH *ewmh;
 
 };
 

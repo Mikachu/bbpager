@@ -31,11 +31,11 @@ using std::cout;
 using std::endl;
 
 PagerWindow::PagerWindow(ToolWindow *toolwindow, Window _window):
-    bt::EventHandler(), bbtool(toolwindow), netwm(toolwindow->netwm())
+    bt::EventHandler(), bbtool(toolwindow), ewmh(toolwindow->ewmh())
 {
     pwin = 0;
     win = _window;
-    netwm->readWMDesktop(_window, desktop_nr);
+    ewmh->readWMDesktop(_window, desktop_nr);
     display = bbtool->XDisplay();
     resource = bbtool->getResource();
     screen = bbtool->getCurrentScreen();
@@ -52,21 +52,21 @@ PagerWindow::PagerWindow(ToolWindow *toolwindow, Window _window):
     bbtool->insertEventHandler(win, this);
 
     //get state of window
-    bt::Netwm::AtomList states;
-    bt::Netwm::AtomList::const_iterator it;
+    bt::EWMH::AtomList states;
+    bt::EWMH::AtomList::const_iterator it;
 
-    netwm->readWMState(win, states);
+    ewmh->readWMState(win, states);
     for (it = states.begin(); it != states.end(); it++) {
-        if ((*it) == netwm->wmStateShaded()) {
+        if ((*it) == ewmh->wmStateShaded()) {
             shaded = true; // window resized by configureNotify ?
         } 
 //      handled by wmDesktop !
-//      else if ((*it) == netwm->wmStateSticky()) {
+//      else if ((*it) == ewmh->wmStateSticky()) {
 //      }
-        else if ((*it) == netwm->wmStateSkipPager()) {
+        else if ((*it) == ewmh->wmStateSkipPager()) {
             skip = true;
         }
-        else if ((*it) == netwm->wmStateHidden()) {
+        else if ((*it) == ewmh->wmStateHidden()) {
             hidden = true;
         }
     }
@@ -249,9 +249,9 @@ void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
 
 void PagerWindow::propertyNotifyEvent(const XPropertyEvent * const event)
 {
-    if (event->atom == netwm->wmDesktop()) {
+    if (event->atom == ewmh->wmDesktop()) {
         unsigned int desktop_nr;
-        netwm->readWMDesktop(event->window, desktop_nr);
+        ewmh->readWMDesktop(event->window, desktop_nr);
         if (desktop_nr == static_cast<unsigned int>(-1)) {
             if (!sticky) {
                 sticky = true;
@@ -266,24 +266,24 @@ void PagerWindow::propertyNotifyEvent(const XPropertyEvent * const event)
                 bbtool->moveWinToDesktop(this, desktop_nr);
         }
     } 
-    else if (event->atom == netwm->wmState()) {
-        bt::Netwm::AtomList states;
-        bt::Netwm::AtomList::const_iterator it;
+    else if (event->atom == ewmh->wmState()) {
+        bt::EWMH::AtomList states;
+        bt::EWMH::AtomList::const_iterator it;
         bool skip_state = false;
         bool shaded_state = false;
         bool hidden_state = false;
-        netwm->readWMState(event->window, states);
+        ewmh->readWMState(event->window, states);
         for (it = states.begin(); it != states.end(); it++) {
-            if ((*it) == netwm->wmStateShaded()) {
+            if ((*it) == ewmh->wmStateShaded()) {
                 shaded_state = true;
             } 
 //          handled by wmDesktop !
-//          if ((*it) == netwm->wmStateSticky()) {
+//          if ((*it) == ewmh->wmStateSticky()) {
 //          }
-            if ((*it) == netwm->wmStateSkipPager()) {
+            if ((*it) == ewmh->wmStateSkipPager()) {
                 skip_state = true;
             }
-            if ((*it) == netwm->wmStateHidden()) {
+            if ((*it) == ewmh->wmStateHidden()) {
                 hidden_state = true;
             }
         }

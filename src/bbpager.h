@@ -32,7 +32,7 @@
 #include "Texture.hh"
 #include "PixmapCache.hh"
 #include "EventHandler.hh"
-#include "Netwm.hh"
+#include "EWMH.hh"
 
 //bbpager includes
 #include "main.h"
@@ -150,7 +150,7 @@ public:
 	WMInterface *wminterface;
     
     virtual void shutdown(void);
-    bt::Netwm *netwm(void) { return _netwm; }
+    bt::EWMH *ewmh(void) { return _ewmh; }
    
     Window root_window;
 	std::list<PagerWindow *> pager_window_list;
@@ -165,7 +165,7 @@ private:
 	int iargc;
 	int row_last,column_last;
 	
-    bt::Netwm *_netwm;
+    bt::EWMH *_ewmh;
     
     Atom xa_wm_delete_window;
     Atom xa_wm_state;

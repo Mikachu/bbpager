@@ -22,13 +22,15 @@
 #include "wminterface.h"
 #include "resource.h"
 
+#include <stdio.h>
+
 WMInterface::WMInterface(ToolWindow *toolwindow) : 
     bt::EventHandler(), bbtool(toolwindow)
 {
     root_window = bbtool->getCurrentScreenInfo()->rootWindow();
     XSelectInput(bbtool->XDisplay(), root_window, PropertyChangeMask); 
     bbtool->insertEventHandler(root_window, this);
-    netwm = bbtool->netwm();
+    ewmh = bbtool->ewmh();
 }
 
 WMInterface::~WMInterface() 
@@ -54,13 +56,13 @@ void WMInterface::sendClientMessage(Window window, Atom atom, XID data, XID data
 
 void WMInterface::updateWindowList(void)
 {
-    bt::Netwm::WindowList window_vect;
+    bt::EWMH::WindowList window_vect;
     PagerWindow *pwindow;
   
-    if (netwm->readClientList(bbtool->getCurrentScreenInfo()->rootWindow(), window_vect)) {
+    if (ewmh->readClientList(bbtool->getCurrentScreenInfo()->rootWindow(), window_vect)) {
         /* add any new window windows */
-        bt::Netwm::WindowList::iterator it = window_vect.begin();
-        bt::Netwm::WindowList::iterator it_end = window_vect.end();
+        bt::EWMH::WindowList::iterator it = window_vect.begin();
+        bt::EWMH::WindowList::iterator it_end = window_vect.end();
         for (; it != it_end; it++) {
             pwindow = bbtool->findPagerWindow((*it));
             if ( pwindow == NULL) { 
@@ -88,12 +90,12 @@ void WMInterface::updateWindowList(void)
 
 void WMInterface::updateWindowStack() 
 {
-    bt::Netwm::WindowList window_vect;
-    if (netwm->readClientListStacking(bbtool->getCurrentScreenInfo()->rootWindow(), window_vect)) {
+    bt::EWMH::WindowList window_vect;
+    if (ewmh->readClientListStacking(bbtool->getCurrentScreenInfo()->rootWindow(), window_vect)) {
         // some check to see if we need update
         PagerWindow *pwindow;
-        bt::Netwm::WindowList::iterator it = window_vect.begin();
-        bt::Netwm::WindowList::iterator it_end = window_vect.end();
+        bt::EWMH::WindowList::iterator it = window_vect.begin();
+        bt::EWMH::WindowList::iterator it_end = window_vect.end();
         for (; it != it_end; it++) {
             pwindow = bbtool->findPagerWindow((*it));
             if ( pwindow == NULL) continue;
@@ -106,19 +108,19 @@ void WMInterface::updateWindowStack()
 void WMInterface::changeDesktop(int desk_number) 
 {
 
-    sendClientMessage(root_window, netwm->currentDesktop(), desk_number);
+    sendClientMessage(root_window, ewmh->currentDesktop(), desk_number);
 }
 
 
 void WMInterface::sendWindowToDesktop(Window win,int desk_number) 
 {
-    sendClientMessage(win, netwm->wmDesktop(), desk_number);
+    sendClientMessage(win, ewmh->wmDesktop(), desk_number);
 }
 
 void WMInterface::setWindowFocus(Window win) 
 {
-    //netwm->setActiveWindow(root_window, win);
-    sendClientMessage(win, netwm->activeWindow(), win);
+    //ewmh->setActiveWindow(root_window, win);
+    sendClientMessage(win, ewmh->activeWindow(), win);
 
 }
 
@@ -163,7 +165,7 @@ void WMInterface::changeNumberOfDesktops(int number_of_desktops)
 bool WMInterface::readActiveWindow(Window target, Window *active)
 {
   unsigned char* data = NULL;
-  if (netwm->getProperty(target, XA_WINDOW, netwm->activeWindow(), &data)) {
+  if (ewmh->getProperty(target, XA_WINDOW, ewmh->activeWindow(), &data)) {
     *active = * (reinterpret_cast<Window *>(data));
     XFree(data);
     return True;
@@ -174,33 +176,33 @@ bool WMInterface::readActiveWindow(Window target, Window *active)
 //property notify events, send to root window.
 void WMInterface::propertyNotifyEvent(const XPropertyEvent * const event)
 {
-     if (event->atom == netwm->clientList()) {
+     if (event->atom == ewmh->clientList()) {
         updateWindowList();
-    } else if (event->atom == netwm->clientListStacking()) {
+    } else if (event->atom == ewmh->clientListStacking()) {
         updateWindowStack();
-    } else if (event->atom ==  netwm->numberOfDesktops()) {
+    } else if (event->atom ==  ewmh->numberOfDesktops()) {
         unsigned int number;
-        if (netwm->readNumberOfDesktops(root_window, &number))
+        if (ewmh->readNumberOfDesktops(root_window, &number))
             changeNumberOfDesktops(number);
-    } else if (event->atom == netwm->desktopGeometry()) {
+    } else if (event->atom == ewmh->desktopGeometry()) {
 
-    } else if (event->atom == netwm->currentDesktop()) {
+    } else if (event->atom == ewmh->currentDesktop()) {
         unsigned int current_desktop;
-        if (!netwm->readCurrentDesktop(root_window, &current_desktop))
+        if (!ewmh->readCurrentDesktop(root_window, &current_desktop))
             fprintf(stderr, "Error: Cannot read current desktop\n");
         else {
             bbtool->desktopChange(current_desktop);
         }
-    } else if (event->atom == netwm->desktopNames()) {
+    } else if (event->atom == ewmh->desktopNames()) {
 
-    } else if (event->atom == netwm->activeWindow()) {
+    } else if (event->atom == ewmh->activeWindow()) {
         Window active;
         if (!readActiveWindow(root_window, &active)) {
             fprintf(stderr, "Error: Cannot read active window\n");
         } else {
             bbtool->focusWindow(active);
         }            
-    } else if (event->atom == netwm->workarea()) {
+    } else if (event->atom == ewmh->workarea()) {
 
     } else {
         // ignore

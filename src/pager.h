@@ -74,7 +74,7 @@ public:
 
 private:
     ToolWindow *bbtool;
-    bt::Netwm *netwm;
+    bt::EWMH *ewmh;
     int screen;
     Resource *resource;
     ::Display *display;

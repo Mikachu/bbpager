@@ -23,6 +23,8 @@
 #include "main.h"
 #include "config.h"
 
+#include <stdio.h>
+
 Configuration::Configuration(int iargc, char **iargv)
 {
 	withdrawn = false;

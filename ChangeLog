@@ -1,3 +1,6 @@
+- patch for 0.4.0-cvs: transition from netwm to ewmh, to make bbpager compile
+       against blackbox 0.70.0cvs Markus Ottenbacher <m.ottenbacher at gmx de>
+
 version-0.3.1
 - Fixed compilation for gcc-3.0 and up.
 
