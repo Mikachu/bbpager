@@ -1,7 +1,6 @@
 configdir = $(datadir)/bbtools
 
-config_DATA =	bbpager.bb \
-		bbpager.nobb \
+config_DATA =	bbpager.rc \
 		README.bbpager
 
 EXTRA_DIST = $(config_DATA)
