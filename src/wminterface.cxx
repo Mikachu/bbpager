@@ -171,7 +171,7 @@ bool WMInterface::readActiveWindow(Window target, Window *active)
   return False;
 }
 
-//property notify events, dens to root window.
+//property notify events, send to root window.
 void WMInterface::propertyNotifyEvent(const XPropertyEvent * const event)
 {
      if (event->atom == netwm->clientList()) {
@@ -180,22 +180,26 @@ void WMInterface::propertyNotifyEvent(const XPropertyEvent * const event)
         updateWindowStack();
     } else if (event->atom ==  netwm->numberOfDesktops()) {
         unsigned int number;
-        netwm->readNumberOfDesktops(root_window, &number);
-        changeNumberOfDesktops(number);
+        if (netwm->readNumberOfDesktops(root_window, &number))
+            changeNumberOfDesktops(number);
     } else if (event->atom == netwm->desktopGeometry()) {
 
     } else if (event->atom == netwm->currentDesktop()) {
         unsigned int current_desktop;
-        netwm->readCurrentDesktop(root_window, &current_desktop);
-        bbtool->desktopChange(current_desktop);
+        if (!netwm->readCurrentDesktop(root_window, &current_desktop))
+            fprintf(stderr, "Error: Cannot read current desktop\n");
+        else {
+            bbtool->desktopChange(current_desktop);
+        }
     } else if (event->atom == netwm->desktopNames()) {
 
     } else if (event->atom == netwm->activeWindow()) {
         Window active;
         if (!readActiveWindow(root_window, &active)) {
-            printf("error cannot read active window\n");
-        }
-        bbtool->focusWindow(active);
+            fprintf(stderr, "Error: Cannot read active window\n");
+        } else {
+            bbtool->focusWindow(active);
+        }            
     } else if (event->atom == netwm->workarea()) {
 
     } else {
