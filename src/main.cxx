@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#include "bbpager.hh"
-#include "main.hh"
+#include "bbpager.h"
+#include "main.h"
 #include "i18n.hh"
 #include "config.h"
 

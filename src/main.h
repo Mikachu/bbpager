@@ -55,7 +55,6 @@ private:
 	bool shape;
 	int _argc;
 	char **_argv;
-	char *position;
 	std::string _geometry;
 	
 	std::string rc_filename;

@@ -29,11 +29,10 @@
 #include <X11/Xresource.h>
 
 #include "Timer.hh"
-#include "Basewindow.hh"
 
 class Basewindow;
 
-class BlackboxInterface : public TimeoutHandler {
+class BlackboxInterface {
   public:
     BlackboxInterface(Basewindow *);
     virtual ~BlackboxInterface(void) {};
@@ -54,7 +53,6 @@ class BlackboxInterface : public TimeoutHandler {
   private:
     Basewindow *base;
     bool net_init;
-    BTimer *timer;
 };
 
 

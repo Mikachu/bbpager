@@ -20,7 +20,7 @@
 //
 
 #include <string>
-#include "Baseresource.hh"
+#include "Baseresource.h"
 #include <stdio.h>
 #include "Menu.hh"
 
@@ -61,8 +61,8 @@ BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const st
 		}
 		
 		if (use_default) {
-			if (!bt_resource.merge(std::string(BBTOOL_LOCAL))) {
-				if (!bt_resource.merge(std::string(BBTOOL_GLOBAL))) {
+			if (!bt_resource.merge(std::string("BBTOOL_LOCAL"))) {
+				if (!bt_resource.merge(std::string("BBTOOL_GLOBAL"))) {
 					fprintf(stderr, "Warning: Cannot open resoource files, using internal defaults\n");
 				}
 			}
@@ -164,8 +164,8 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 {
 	std::string rtexture;
 	bt::Texture texture;
-	bt:: Color color;
-	bt:: Color colorTo;
+	bt::Color color;
+	bt::Color colorTo;
 
 	rtexture = bt_resource.read(rname, rclass, default_texture);
 	texture.setDescription(rtexture);
