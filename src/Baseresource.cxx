@@ -179,11 +179,11 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 	std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", default_color);
 	
 	color = bt::Color::namedColor(display, screen, rcolor);
-	texture.setColor(color);
+	texture.setColor1(color);
 
 	rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", default_colorTo);
 	colorTo = bt::Color::namedColor(display, screen, rcolor);
-	texture.setColorTo(colorTo);
+	texture.setColor2(colorTo);
 	return(texture);
 }
 
@@ -213,7 +213,7 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 		rcolor = bt_resource.read(alt_rname + ".color", alt_rclass + ".Color", default_color);
 	}
 	color = bt::Color::namedColor(display, screen, rcolor);
-	texture.setColor(color);
+	texture.setColor1(color);
 
 	rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", "");
 	if (rcolor.empty()) {
@@ -221,7 +221,7 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 	}
 
 	colorTo = bt::Color::namedColor(display, screen, rcolor);
-	texture.setColorTo(colorTo);
+	texture.setColor2(colorTo);
 
 	return(texture);
 }
