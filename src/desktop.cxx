@@ -26,6 +26,11 @@ extern "C" {
 #include <X11/cursorfont.h>
 }
 
+#include <iostream>
+
+using std::list;
+using std::cout;
+using std::endl;
 
 DesktopWindow::DesktopWindow(ToolWindow *toolwindow, unsigned int _desktop_nr):
                  bt::EventHandler(), bbtool(toolwindow)
@@ -48,12 +53,9 @@ DesktopWindow::~DesktopWindow(void)
     if (pixmap) bt::PixmapCache::release(pixmap);
     if (pixmap_focused) bt::PixmapCache::release(pixmap_focused);
 
-    std::list<PagerWindow *>::iterator it = bbtool->pagerWindowList().begin();
+    list<PagerWindow *>::iterator it = bbtool->pagerWindowList().begin();
 
     for (; it != bbtool->pagerWindowList().end(); it++) {
-        if ((*it)->isSticky()) {
-            /* not yet supported */
-        }
         if ((*it)->desktopId() == desktop_id) {
             bbtool->pagerWindowList().erase(it);
         }
@@ -68,12 +70,10 @@ void DesktopWindow::reconfigure(void)
 void DesktopWindow::buildWindow(bool reconfigure) 
 {
     XSetWindowAttributes attrib;
-    //int row, column;
-    unsigned long create_mask = CWBackPixmap|CWCursor|CWEventMask|CWBorderPixel;
+    unsigned long create_mask = CWBackPixmap | CWEventMask | CWBorderPixel;
 
     attrib.background_pixmap = ParentRelative;
     attrib.border_pixel = resource->desktopwin.activeColor.pixel(screen);
-    attrib.cursor =  XCreateFontCursor(display, XC_left_ptr); //getSessionCursor();
     attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
                 FocusChangeMask | StructureNotifyMask|
                 SubstructureRedirectMask | ButtonMotionMask;
@@ -86,10 +86,18 @@ void DesktopWindow::buildWindow(bool reconfigure)
 
     pixmap = bt::PixmapCache::find(bbtool->getCurrentScreen(), 
              resource->desktopwin.texture, _width, _height, pixmap);
+    if (pixmap == 0) {
+        cout << "Error: cannot create desktop pixmap with texture: \"";
+        cout << resource->desktopwin.texture.description() << "\"" << endl;
+    }
 
     if (resource->getDesktopFocusStyle() == texture) {
         pixmap_focused = bt::PixmapCache::find(bbtool->getCurrentScreen(), 
                  resource->desktopwin.focusedTexture, _width, _height, pixmap_focused);
+        if (pixmap_focused == 0) {
+            cout << "Error: cannot create focused desktop pixmap with texture: \"";
+            cout << resource->desktopwin.focusedTexture.description() << "\"" << endl;
+        }
     }
     if (!reconfigure)
         win = XCreateWindow(display, bbtool->frameWindow()->window(), _x, _y, _width,
@@ -215,7 +223,7 @@ void DesktopWindow::buttonReleaseEvent(const XButtonEvent * const event)
                 grabbedWindow = 0;
                 return;
             }
-            std::list<DesktopWindow *>::iterator it = bbtool->desktopWindowList().begin();
+            list<DesktopWindow *>::iterator it = bbtool->desktopWindowList().begin();
             for (; it != bbtool->desktopWindowList().end(); it++) {
                 if (move_x > (*it)->x() - (*it)->width() &&
                           move_x <= (*it)->x() + (*it)->width() &&

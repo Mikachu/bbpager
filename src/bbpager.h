@@ -29,10 +29,8 @@
 // Blackbox library includes
 #include "Display.hh"
 #include "Application.hh"
-#include "Timer.hh"
 #include "Texture.hh"
 #include "PixmapCache.hh"
-#include "Pen.hh"
 #include "EventHandler.hh"
 #include "Netwm.hh"
 
@@ -136,7 +134,6 @@ public:
 	void setNumberOfDesktops(int n) { number_of_desktops=n; }
 
 	void setBlackboxInit(void) { wm_init = true; }
-//	struct PIXMAP getPixmap(void) { return pixmap; }
 	Resource *getResource(void) { return resource; }
 	int getCurrentScreen(void) { return current_screen; }
     FrameWindow *frameWindow(void) { return frame_window; }
@@ -145,8 +142,8 @@ public:
 
 
     unsigned int numberOfDesktops(void) { return(number_of_desktops); }
-    Atom wmDeleteWindowAtom(void) { return(xa_wm_delete_window); }
-    Atom wmStateAtom(void) { return(xa_wm_state); }
+    Atom &wmDeleteWindowAtom(void) { return(xa_wm_delete_window); }
+    Atom &wmStateAtom(void) { return(xa_wm_state); }
 
     void addDesktopWindow(unsigned int nr);
    

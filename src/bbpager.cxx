@@ -28,10 +28,11 @@ extern "C" {
 #include <X11/cursorfont.h>
 }
 
+#include <iostream>
 
-
-
-
+using std::cout;
+using std::endl;
+using std::list;
 
 ToolWindow::ToolWindow(Configuration cml_options):
     bt::Application(cml_options.appName(), cml_options.displayName().c_str(), false),
@@ -47,21 +48,18 @@ ToolWindow::ToolWindow(Configuration cml_options):
     current_desktop_nr = 0;
     wm_init = false;
     row_last = column_last = 0;
- 
+
+    xa_wm_delete_window = XInternAtom(XDisplay(), "WM_DELETE_WINDOW", False);
+
+
     resource = new Resource(this, config.rcFilename());
     _netwm = new bt::Netwm(XDisplay());
     _netwm->readNumberOfDesktops(current_screen_info.rootWindow(), &number_of_desktops);
     frame_window = new FrameWindow(this);
     wminterface = new WMInterface(this);
-    char *named_atoms[] = {
-        "WM_DELETE_WINDOW",
-        "WM_STATE"
-    };
-    Atom atoms[2];
-    
-    XInternAtoms(XDisplay(), named_atoms, 2, False, atoms);
-    xa_wm_delete_window = atoms[0];
-    xa_wm_state = atoms[1];
+
+    xa_wm_state =  XInternAtom(XDisplay(),"WM_STATE", False);
+
     unsigned int i;
     for (i = 0; i < number_of_desktops; i++) {
         addDesktopWindow(i);
@@ -71,14 +69,14 @@ ToolWindow::ToolWindow(Configuration cml_options):
     wminterface->updateWindowList();
     Window active;
     if (!wminterface->readActiveWindow(root_window, &active)) {
-            printf("error cannot read active window\n");
+            cout << "Error: cannot get active window from Window Manager" << endl;
     }
     focusWindow(active);
 }
 
 ToolWindow::~ToolWindow() 
 {
-    std::list<DesktopWindow *>::iterator it;
+    list<DesktopWindow *>::iterator it;
     for (it = desktop_window_list.begin(); it != desktop_window_list.end(); it++) {
         delete (*it);
     }
@@ -118,7 +116,7 @@ void ToolWindow::moveWinToDesktop(Window win, DesktopWindow *desktop)
 
 PagerWindow *ToolWindow::findPagerWindow(Window win)
 {
-    std::list<PagerWindow *>::iterator it = pager_window_list.begin();
+    list<PagerWindow *>::iterator it = pager_window_list.begin();
 
     for (; it != pager_window_list.end(); it++) {
         if ((*it)->realWindow() == win) {
@@ -130,7 +128,7 @@ PagerWindow *ToolWindow::findPagerWindow(Window win)
 
 PagerWindow *ToolWindow::findPPagerWindow(Window win)
 {
-    std::list<PagerWindow *>::iterator it = pager_window_list.begin();
+    list<PagerWindow *>::iterator it = pager_window_list.begin();
 
     
     for (; it != pager_window_list.end(); it++) {
@@ -143,7 +141,7 @@ PagerWindow *ToolWindow::findPPagerWindow(Window win)
 
 PagerWindow *ToolWindow::findFocusedPagerWindow()
 {
-    std::list<PagerWindow *>::iterator it = pager_window_list.begin();
+    list<PagerWindow *>::iterator it = pager_window_list.begin();
 
     
     for (; it != pager_window_list.end(); it++) {
@@ -163,11 +161,11 @@ void ToolWindow::reconfigure(void)
   
     desktop_nr = 0;
 
-    std::list<DesktopWindow *>::iterator dit = desktop_window_list.begin();
+    list<DesktopWindow *>::iterator dit = desktop_window_list.begin();
     for (; dit != desktop_window_list.end(); dit++) {
         (*dit)->reconfigure();
     }
-    std::list<PagerWindow *>::iterator pit = pager_window_list.begin();
+    list<PagerWindow *>::iterator pit = pager_window_list.begin();
     for (; pit != pager_window_list.end(); pit++) {
         (*pit)->reconfigure();
     }
@@ -229,7 +227,7 @@ void ToolWindow::desktopChange(unsigned int desktop_nr)
 
 DesktopWindow *ToolWindow::findDesktopWindow(unsigned int desktop_nr)
 {
-    std::list<DesktopWindow *>::iterator it = desktop_window_list.begin();
+    list<DesktopWindow *>::iterator it = desktop_window_list.begin();
 
     for (; it != desktop_window_list.end(); it++) {
         if ((*it)->desktopId() == desktop_nr) {
@@ -241,7 +239,7 @@ DesktopWindow *ToolWindow::findDesktopWindow(unsigned int desktop_nr)
 
 DesktopWindow *ToolWindow::findDesktopWindow(Window win)
 {
-    std::list<DesktopWindow *>::iterator it = desktop_window_list.begin();
+    list<DesktopWindow *>::iterator it = desktop_window_list.begin();
 
     for (; it != desktop_window_list.end(); it++) {
         if ((*it)->window() == win) {
@@ -279,15 +277,12 @@ void ToolWindow::removeDesktopWindow(void)
 }
 
 
-//void ToolWindow::addFrameWindow(struct WindowList *window,Window desktopWin,bool reconfigure) 
-//{
-//}
-
 FrameWindow::FrameWindow(ToolWindow *toolwindow) :
     EventHandler(), bbtool(toolwindow)
 {
     screen = bbtool->getCurrentScreen();
     display = bbtool->XDisplay();
+
     buildWindow(false);
     bbtool->insertEventHandler(win, this);
 }
@@ -316,14 +311,12 @@ void FrameWindow::buildWindow(bool reconfigure)
         XClassHint classhints;
         XTextProperty windowname;
 
-        unsigned long create_mask = CWBackPixmap | CWBorderPixel |
-                        CWCursor | CWEventMask;
+        unsigned long create_mask = CWBackPixmap | CWBorderPixel | CWEventMask;
 
 
         
         attrib.background_pixmap = ParentRelative;
         attrib.border_pixel = bbtool->resource->desktopwin.activeColor.pixel(screen);
-        attrib.cursor = XCreateFontCursor(display, XC_left_ptr);
         attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
                       FocusChangeMask | StructureNotifyMask | 
                       SubstructureRedirectMask;
@@ -334,7 +327,6 @@ void FrameWindow::buildWindow(bool reconfigure)
                              create_mask, &attrib);
 
         char *name="bbpager"; //BBTOOL;
-        XSizeHints sizehints;
      
         if (bbtool->configuration().isWithdrawn()) {
             wmhints.initial_state = WithdrawnState;
@@ -350,7 +342,7 @@ void FrameWindow::buildWindow(bool reconfigure)
               
         XStringListToTextProperty(&name, 1, &windowname);
         XSetWMProperties(display, win ,&windowname, NULL, bbtool->configuration().argv(), 
-                         bbtool->configuration().argc(), &sizehints, &wmhints, &classhints);
+                         bbtool->configuration().argc(), NULL, &wmhints, &classhints);
         Atom wmproto[1];
         wmproto[0] = bbtool->wmDeleteWindowAtom();
         XSetWMProtocols(display, win, wmproto, 1);
@@ -373,10 +365,7 @@ void FrameWindow::buildWindow(bool reconfigure)
     if (!bbtool->configuration().isShaped()) {
         XSetWindowBackgroundPixmap(display, win, pixmap);
     }
-
-//    XClearWindow(display, win);
     XMapWindow(display, win);
-    XMapSubwindows(display, win);
 }
 
 void FrameWindow::resize(void)

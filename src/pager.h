@@ -23,36 +23,7 @@
 #ifndef __PAGER_H
 #define __PAGER_H
 
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-
-// Blackbox library includes
-#include "Display.hh"
-#include "Application.hh"
-#include "Timer.hh"
-#include "Texture.hh"
-#include "PixmapCache.hh"
-#include "Pen.hh"
-#include "EventHandler.hh"
-
-#include "main.h"
-#include "resource.h"
-#include "wminterface.h"
-#include "Netwm.hh"
-
-#include <list>
-
-class Resource;
-class WMInterface;
-
-struct GEOM {
-  unsigned int height;
-  unsigned int width;
-  int x;
-  int y;
-};
-
-
+#include "bbpager.h"
 
 class PagerWindow : public bt::EventHandler 
 {

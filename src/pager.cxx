@@ -25,6 +25,10 @@ extern "C" {
 #include <X11/cursorfont.h>
 }
 
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 PagerWindow::PagerWindow(ToolWindow *toolwindow, Window _window):
     bt::EventHandler(), bbtool(toolwindow), netwm(toolwindow->netwm())
@@ -142,11 +146,18 @@ void PagerWindow::buildWindow(bool reconfigure)
 
     pixmap = bt::PixmapCache::find(screen, resource->pagerwin.texture, 
              pager_width, pager_height);
-
-    if (resource->getFocusStyle()==texture)
+    if (pixmap == 0) {
+        cout << "Error: cannot create pager window pixmap with texture: \"";
+        cout << resource->pagerwin.texture.description() << "\"" << endl;
+    }
+    if (resource->getFocusStyle()==texture) {
         pixmap_focused = bt::PixmapCache::find(screen, resource->pagerwin.focusedTexture,
             resource->desktopSize.width, resource->desktopSize.height);
-
+        if (pixmap == 0) {
+            cout << "Error: cannot create focused pager window pixmap with texture: \"";
+            cout << resource->pagerwin.focusedTexture.description() << "\"" << endl;
+        }
+    }
     unsigned int i;
     if (!sticky) {
         if (number_of_desktops != 1) {
@@ -203,12 +214,12 @@ void PagerWindow::destroyWindow()
 
 void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
 {
-    unsigned long create_mask = CWBackPixmap|CWCursor|CWBorderPixel;
+    unsigned long create_mask = CWBackPixmap|/*CWCursor|*/CWBorderPixel;
     XSetWindowAttributes attrib;
 
     attrib.background_pixmap = ParentRelative;
     attrib.border_pixel=resource->pagerwin.inactiveColor.pixel(screen);
-    attrib.cursor = XCreateFontCursor(display, XC_left_ptr); //getSessionCursor();
+//    attrib.cursor = XCreateFontCursor(display, XC_left_ptr); //getSessionCursor();
 
     DesktopWindow *desktop = bbtool->findDesktopWindow(nr);
     if (!sticky) nr = 0;

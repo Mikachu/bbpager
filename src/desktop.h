@@ -23,29 +23,8 @@
 #ifndef __DESKTOP_H
 #define __DESKTOP_H
 
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
+#include "bbpager.h"
 
-// Blackbox library includes
-#include "Display.hh"
-#include "Application.hh"
-#include "Timer.hh"
-#include "Texture.hh"
-#include "PixmapCache.hh"
-#include "Pen.hh"
-#include "EventHandler.hh"
-#include "Netwm.hh"
-
-
-#include "main.h"
-#include "resource.h"
-#include "wminterface.h"
-#include "pager.h"
-
-#include <list>
-
-class Resource;
-class WMInterface;
 class PagerWindow;
 
 class DesktopWindow : public bt::EventHandler
