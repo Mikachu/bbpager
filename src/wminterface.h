@@ -57,13 +57,13 @@ class WMInterface : public bt::EventHandler
 
         virtual void propertyNotifyEvent(const XPropertyEvent * const event);
 
+        void sendClientMessage(Window window, Atom atom, XID data, XID data1 = 0);
     private:
         ToolWindow *bbtool;
 
         Window root_window;
         bt::Netwm *netwm;
 
-        void sendClientMessage(Window window, Atom atom, XID data);
 };
 
 #endif /* __WMINTERFACE_HH */

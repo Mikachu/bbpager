@@ -35,7 +35,7 @@ WMInterface::~WMInterface()
 {
 }
 
-void WMInterface::sendClientMessage(Window window, Atom atom, XID data) {
+void WMInterface::sendClientMessage(Window window, Atom atom, XID data, XID data1) {
   XEvent e;
   unsigned long mask;
 
@@ -44,7 +44,7 @@ void WMInterface::sendClientMessage(Window window, Atom atom, XID data) {
   e.xclient.message_type = atom;
   e.xclient.format = 32;
   e.xclient.data.l[0] = (unsigned long) data;
-  e.xclient.data.l[1] = 0;
+  e.xclient.data.l[1] = (unsigned long) data1;
   mask =  SubstructureRedirectMask;
   XSendEvent(bbtool->XDisplay(), 
              root_window,
