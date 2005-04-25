@@ -176,12 +176,16 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 
 	rtexture = bt_resource.read(rname, rclass, default_texture);
 	texture.setDescription(rtexture);
-	std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", default_color);
+	std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", 
+                                          bt_resource.read(rname + ".color1", 
+                                          rclass + ".Color1", default_color));
 	
 	color = bt::Color::namedColor(display, screen, rcolor);
 	texture.setColor1(color);
 
-	rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", default_colorTo);
+	rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", 
+                              bt_resource.read(rname + ".color2", 
+                              rclass + ".Color2", default_colorTo));
 	colorTo = bt::Color::namedColor(display, screen, rcolor);
 	texture.setColor2(colorTo);
 	return(texture);
@@ -208,16 +212,24 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 	}
 	texture.setDescription(rtexture);
 	
-	std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", "");
+	std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", 
+                                          bt_resource.read(rname + ".color1", 
+                                          rclass + ".Color1", ""));
 	if (rcolor.empty()) {
-		rcolor = bt_resource.read(alt_rname + ".color", alt_rclass + ".Color", default_color);
+		rcolor = bt_resource.read(alt_rname + ".color", alt_rclass + ".Color", 
+                                  bt_resource.read(alt_rname + ".color1", 
+                                  alt_rclass + ".Color1", default_color));
 	}
 	color = bt::Color::namedColor(display, screen, rcolor);
 	texture.setColor1(color);
 
-	rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", "");
+	rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", 
+                              bt_resource.read(rname + ".color2", 
+                              rclass + ".Color2", ""));
 	if (rcolor.empty()) {
-		rcolor = bt_resource.read(alt_rname + ".colorTo", alt_rclass + ".ColorTo", default_colorTo);
+		rcolor = bt_resource.read(alt_rname + ".colorTo", alt_rclass + ".ColorTo", 
+                                  bt_resource.read(alt_rname + ".color2", 
+                                  alt_rclass + ".Color2", default_colorTo));
 	}
 
 	colorTo = bt::Color::namedColor(display, screen, rcolor);

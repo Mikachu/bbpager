@@ -28,7 +28,7 @@
 /* bbpager.desktop */
 #define BB_LABEL "toolbar.label"
 /* bbpager.bevelWidth */
-#define BB_BEVELWIDTH "bevelWidth"
+#define BB_BEVELWIDTH "marginWidth"
 /* bbpager.window */
 #define BB_BUTTON "toolbar.button"
 /* bbpager.focused.window */

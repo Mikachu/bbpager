@@ -82,7 +82,8 @@ void Resource::Frame()
 	frame.texture = readTexture("bbpager.frame","BbPager.Frame",BB_FRAME,"Toolbar",
 				    "Raised Gradient Vertical Bevel1", "slategrey","darkslategrey");
 
-	frame.bevelWidth = readUInt( "bbpager.bevelWidth","Bbpager.BevelWidth", 4);
+	frame.bevelWidth = readUInt("bbpager.bevelWidth","Bbpager.BevelWidth", 
+                                readUInt( "bbpager.margin","Bbpager.margin", 4));
 	if (frame.bevelWidth == 0)
 		frame.bevelWidth = 4;
 }
