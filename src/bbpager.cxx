@@ -55,7 +55,17 @@ ToolWindow::ToolWindow(Configuration cml_options):
     resource = new Resource(this, config.rcFilename());
 
     _ewmh = new bt::EWMH(display());
-    _ewmh->readNumberOfDesktops(current_screen_info.rootWindow(), &number_of_desktops);
+    if (!_ewmh->readNumberOfDesktops(current_screen_info.rootWindow(), &number_of_desktops))
+    {
+        delete _ewmh;
+        delete resource;
+        // temporary fix: 1: we could add a timer here an wait
+        //                2: we should check for supported atoms, and not use
+        //                number of desktops.
+        std::string error = "Please start bbpager after an EWHM complaint Window manager";
+        error += "\nIf you start bbpager from .xinitrc or .xsession consider delaying bbpager startup using \"sleep 5 && bbpager &\"";
+        throw error;
+    }
 
     frame_window = new FrameWindow(this);
 
@@ -391,9 +401,10 @@ void FrameWindow::buildWindow(bool reconfigure)
         XResizeWindow(display, win, fwidth, fheight);
     }
 
-    if (!bbtool->configuration().isShaped()) {
+//    disable shape, until we can get it working again
+//    if (!bbtool->configuration().isShaped()) {
         XSetWindowBackgroundPixmap(display, win, pixmap);
-    }
+//    }
     XMapWindow(display, win);
 }
 

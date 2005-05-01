@@ -24,6 +24,9 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <string>
+#include <iostream>
+
 
 Configuration::Configuration(int iargc, char **iargv)
 {
@@ -51,7 +54,8 @@ void Usage()
 	fprintf(stdout,"-geom[etry] <geometry>      Set geometry of window\n");
 	fprintf(stdout,"-d[ecorated]                Show 'normal' decorated window\n");
 	fprintf(stdout,"-w[ithdrawn]                Place bbtool in the Slit\n");
-	fprintf(stdout,"-s[hape]                    Don't display groundplate\n");
+//  disable shape, until we can get it working again
+//	fprintf(stdout,"-s[hape]                    Don't display groundplate\n");
 }
 
 
@@ -88,12 +92,19 @@ int main(int argc,char **argv)
 		}
 		else if ((!strcmp(argv[i],"-withdrawn")) || (!strcmp(argv[i],"-w"))) {
 			options.setWithdrawn(true);
-		} else if ((!strcmp(argv[i],"-shape")) || (!strcmp(argv[i],"-s"))) {
-			options.setShaped(true);
+//      disable shape, until we can get it working again
+//		} else if ((!strcmp(argv[i],"-shape")) || (!strcmp(argv[i],"-s"))) {
+//			options.setShaped(true);
 		} else if ((!strcmp(argv[i],"-decorated")) || (!strcmp(argv[i],"-d"))) {
 			options.setDecorated(true);
 		}
 	}
-	ToolWindow bbpager(options);
-	bbpager.run();
+    try {
+    	ToolWindow bbpager(options);
+	    bbpager.run();
+    }
+    catch (std::string &error)
+    {
+        std::cerr << error << "\n";
+    }
 }

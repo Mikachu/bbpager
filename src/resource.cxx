@@ -97,7 +97,7 @@ void Resource::SizeAndPosition()
 		bbtool->configuration().setWithdrawn(readBool("bbpager.withdrawn", "Bbpager.Withdrawn", false));
 
 	if (!(bbtool->configuration().isShaped())) 
-		bbtool->configuration().setShaped(readBool("bbpager.shape", "Bbpager.Shape", bbtool->configuration().isWithdrawn()));
+		bbtool->configuration().setShaped(readBool("bbpager.shape", "Bbpager.Shape", false /*bbtool->configuration().isWithdrawn() */));
 
 	if (bbtool->configuration().geometry().empty()) {
 		std::string positionstring = readString("bbpager.position","Bbpager.Position", "-0-0");
@@ -138,7 +138,7 @@ void Resource::SizeAndPosition()
 	if (!bbtool->configuration().isWithdrawn())
 		default_width = 40;
 	else
-		default_width = 64 / columns - ((columns - 1)) * frame.bevelWidth;
+		default_width = 64;
 
 	desktopSize.width = readUInt("bbpager.desktop.width", "Bbpager.Desktop.Width", default_width);
       
@@ -146,7 +146,7 @@ void Resource::SizeAndPosition()
 	if (!bbtool->configuration().isWithdrawn())
 		default_height = 30;
 	else
-		default_height = 48 / columns;
+		default_height = 48;
 
 	desktopSize.height = readUInt("bbpager.desktop.height", "Bbpager.Desktop.Height", default_height);
 }
