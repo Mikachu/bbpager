@@ -49,8 +49,8 @@ DesktopWindow::DesktopWindow(ToolWindow *toolwindow, unsigned int _desktop_nr):
 
 DesktopWindow::~DesktopWindow(void)
 {
+    bbtool->removeEventHandler(win);
     XDestroyWindow(bbtool->XDisplay(), win);
-
     if (pixmap) bt::PixmapCache::release(pixmap);
     if (pixmap_focused) bt::PixmapCache::release(pixmap_focused);
 }

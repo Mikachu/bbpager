@@ -300,6 +300,7 @@ FrameWindow::FrameWindow(ToolWindow *toolwindow) :
 
 FrameWindow::~FrameWindow()
 {
+    bbtool->removeEventHandler(win);
     XUnmapWindow(display, win);
     /* destroy pixmaps */
     if (pixmap) bt::PixmapCache::release(pixmap);
