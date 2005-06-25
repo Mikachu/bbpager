@@ -79,7 +79,7 @@ void Resource::load(void)
 
 void Resource::Frame() 
 {
-	frame.texture = readTexture("bbpager.frame","BbPager.Frame",BB_FRAME,"Toolbar",
+	frame.texture = readTexture("bbpager.frame","BbPager.Frame",BB_FRAME, BB_C_FRAME,
 				    "Raised Gradient Vertical Bevel1", "slategrey","darkslategrey");
 
 	frame.bevelWidth = readUInt("bbpager.bevelWidth","Bbpager.BevelWidth", 
@@ -165,7 +165,7 @@ void Resource::PagerWin()
 		desktop_focus_style = border;
   
 	desktopwin.texture = readTexture("bbpager.desktop", "Bbpager.Desktop",
-			                 BB_LABEL,"Toolbar.Label",
+			                 BB_LABEL,BB_C_LABEL,
 					 "Sunken Gradient Diagonal",
 					 "slategrey","darkslategrey");
 
@@ -185,13 +185,13 @@ void Resource::PagerWin()
 		pager_focus_style = texture;
 
 	pagerwin.texture = readTexture("bbpager.window", "Bbpager.Window",
-			               BB_WINDOW_UNFOCUS, "Window.Focus",
+			               BB_WINDOW_UNFOCUS, BB_C_WINDOW_UNFOCUS,
 				       "Raised Gradient Diagonal",
 				       "rgb:c/9/6","rgb:8/6/4");
 
 	if (pager_focus_style == texture) 
 		pagerwin.focusedTexture = readTexture("bbpager.window.focus","Bbpager.Window.Focus",
-						       BB_WINDOW_FOCUS,"Window.Focus",
+						       BB_WINDOW_FOCUS,BB_C_WINDOW_FOCUS,
 		  				      "Raised Vertical Gradient",
 						      "rgb:c/9/6","rgb:8/6/4");
   
