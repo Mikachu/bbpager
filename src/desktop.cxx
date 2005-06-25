@@ -318,7 +318,14 @@ void DesktopWindow::redraw(void)
     else
     {
         if (resource->getDesktopFocusStyle() == border)
-            XSetWindowBorderWidth(display, win, 1);
+            XSetWindowBorderWidth(display, win, 0);
+        else
+        {
+            bt::drawTexture(screen,
+                        resource->desktopwin.texture,
+                         win, 
+                         u, u, pixmap);
+        }
     }
 }
 
