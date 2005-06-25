@@ -165,7 +165,7 @@ bt::Color BaseResource::readColor(const std::string &rname,const std::string &rc
 
 bt::Texture BaseResource::readTexture(const std::string &rname, 
 				      const std::string &rclass,
-			       	      const std::string &default_texture,
+			       	  const std::string &default_texture,
 			 	      const std::string &default_color,
 				      const std::string &default_colorTo)
 {
@@ -174,20 +174,35 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 	bt::Color color;
 	bt::Color colorTo;
 
-	rtexture = bt_resource.read(rname, rclass, default_texture);
+	rtexture = bt_resource.read(rname, rclass, 
+                                bt_resource.read(rname + ".appearance", 
+                                rclass + ".Appearance", default_texture));
 	texture.setDescription(rtexture);
-	std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", 
-                                          bt_resource.read(rname + ".color1", 
-                                          rclass + ".Color1", default_color));
-	
-	color = bt::Color::namedColor(display, screen, rcolor);
-	texture.setColor1(color);
 
-	rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", 
-                              bt_resource.read(rname + ".color2", 
-                              rclass + ".Color2", default_colorTo));
-	colorTo = bt::Color::namedColor(display, screen, rcolor);
-	texture.setColor2(colorTo);
+    if ((texture.texture() & bt::Texture::Gradient)
+      || (texture.texture() & bt::Texture::Interlaced)) 
+    {
+    
+	    std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", 
+                                              bt_resource.read(rname + ".color1", 
+                                              rclass + ".Color1", default_color));
+	    color = bt::Color::namedColor(display, screen, rcolor);
+	    texture.setColor1(color);
+    
+	    rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", 
+                                  bt_resource.read(rname + ".color2", 
+                                  rclass + ".Color2", default_colorTo));
+	    colorTo = bt::Color::namedColor(display, screen, rcolor);
+	    texture.setColor2(colorTo);
+    }
+    else
+    {
+        std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", 
+                                              bt_resource.read(rname + ".backgroundColor", 
+                                              rclass + ".backgroundColor", default_color));
+	    color = bt::Color::namedColor(display, screen, rcolor);
+	    texture.setColor1(color);
+    }
 	return(texture);
 }
 
@@ -196,7 +211,7 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 				      const std::string &rclass,
 				      const std::string &alt_rname,
 				      const std::string &alt_rclass,
-			       	      const std::string &default_texture,
+			       	  const std::string &default_texture,
 			 	      const std::string &default_color,
 			 	      const std::string &default_colorTo)
 
@@ -206,34 +221,57 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 	bt::Color colorTo;
 
 
-	std::string rtexture = bt_resource.read(rname, rclass, "");
+	std::string rtexture = bt_resource.read(rname, rclass, 
+                                            bt_resource.read(rname + ".appearance",
+                                            rclass + "Appearance", ""));
 	if (rtexture.empty()) {
-		rtexture = bt_resource.read(alt_rname, alt_rclass, default_texture);
+		rtexture = bt_resource.read(alt_rname, alt_rclass, 
+                                    bt_resource.read(alt_rname + ".appearance", 
+                                alt_rclass + ".Appearance", default_texture));
 	}
 	texture.setDescription(rtexture);
-	
-	std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", 
-                                          bt_resource.read(rname + ".color1", 
-                                          rclass + ".Color1", ""));
-	if (rcolor.empty()) {
-		rcolor = bt_resource.read(alt_rname + ".color", alt_rclass + ".Color", 
-                                  bt_resource.read(alt_rname + ".color1", 
-                                  alt_rclass + ".Color1", default_color));
-	}
-	color = bt::Color::namedColor(display, screen, rcolor);
-	texture.setColor1(color);
 
-	rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", 
-                              bt_resource.read(rname + ".color2", 
-                              rclass + ".Color2", ""));
-	if (rcolor.empty()) {
-		rcolor = bt_resource.read(alt_rname + ".colorTo", alt_rclass + ".ColorTo", 
-                                  bt_resource.read(alt_rname + ".color2", 
-                                  alt_rclass + ".Color2", default_colorTo));
-	}
+    if ((texture.texture() & bt::Texture::Gradient)
+      || (texture.texture() & bt::Texture::Interlaced)) 
+    {
 
-	colorTo = bt::Color::namedColor(display, screen, rcolor);
-	texture.setColor2(colorTo);
+	    std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", 
+                                              bt_resource.read(rname + ".color1", 
+                                              rclass + ".Color1", ""));
+   
+	    if (rcolor.empty()) {
+		    rcolor = bt_resource.read(alt_rname + ".color", alt_rclass + ".Color", 
+                                      bt_resource.read(alt_rname + ".color1", 
+                                      alt_rclass + ".Color1", default_color));
+	    }
+	    color = bt::Color::namedColor(display, screen, rcolor);
+	    texture.setColor1(color);
+
+	    rcolor = bt_resource.read(rname + ".colorTo", rclass + ".ColorTo", 
+                                  bt_resource.read(rname + ".color2", 
+                                  rclass + ".Color2", ""));
+	    if (rcolor.empty()) {
+		    rcolor = bt_resource.read(alt_rname + ".colorTo", alt_rclass + ".ColorTo", 
+                                      bt_resource.read(alt_rname + ".color2", 
+                                      alt_rclass + ".Color2", default_colorTo));
+	    }
+
+	    colorTo = bt::Color::namedColor(display, screen, rcolor);
+	    texture.setColor2(colorTo);
+    }
+    else // flat color
+    {
+        std::string rcolor = bt_resource.read(rname + ".color", rclass + ".Color", 
+                                              bt_resource.read(rname + ".backgroundColor", 
+                                              rclass + ".BackgroundColor", ""));
+	    if (rcolor.empty()) {
+		    rcolor = bt_resource.read(alt_rname + ".color", alt_rclass + ".Color", 
+                                      bt_resource.read(alt_rname + ".backgroundColor", 
+                                      alt_rclass + ".BackgroundColor", default_color));
+	    }
+	    color = bt::Color::namedColor(display, screen, rcolor);
+	    texture.setColor1(color);
+    }
 
 	return(texture);
 }
