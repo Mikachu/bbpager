@@ -81,7 +81,10 @@ PagerWindow::~PagerWindow(void)
     unsigned int i;
     bbtool->removeEventHandler(win);
     for (i = 0; i < number_of_desktops; i++)
+    {
+        bbtool->removeEventHandler(pwin[i]) ;
         XDestroyWindow(display, pwin[i]);  
+    }
     delete [] pwin;
     if (pixmap) bt::PixmapCache::release(pixmap);
     if (pixmap_focused) bt::PixmapCache::release(pixmap_focused);
@@ -146,14 +149,16 @@ void PagerWindow::buildWindow(bool reconfigure)
 
     pixmap = bt::PixmapCache::find(screen, resource->pagerwin.texture, 
              pager_width, pager_height);
-    if (pixmap == 0) {
+    if (pixmap == 0 && 
+            resource->pagerwin.texture.texture() != (bt::Texture::Flat | bt::Texture::Solid)) {
         cout << "Error: cannot create pager window pixmap with texture: \"";
         cout << resource->pagerwin.texture.description() << "\"" << endl;
     }
     if (resource->getFocusStyle()==texture) {
         pixmap_focused = bt::PixmapCache::find(screen, resource->pagerwin.focusedTexture,
             resource->desktopSize.width, resource->desktopSize.height);
-        if (pixmap == 0) {
+        if (pixmap == 0 &&
+               resource->pagerwin.focusedTexture.texture() != (bt::Texture::Flat | bt::Texture::Solid) ) {
             cout << "Error: cannot create focused pager window pixmap with texture: \"";
             cout << resource->pagerwin.focusedTexture.description() << "\"" << endl;
         }
@@ -214,12 +219,15 @@ void PagerWindow::destroyWindow()
 
 void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
 {
-    unsigned long create_mask = CWBackPixmap|CWBorderPixel;
+    unsigned long create_mask = CWBackPixmap|CWBorderPixel|CWEventMask ;
     XSetWindowAttributes attrib;
 
     attrib.background_pixmap = ParentRelative;
     attrib.border_pixel=resource->pagerwin.inactiveColor.pixel(screen);
+    attrib.event_mask = ExposureMask;
 
+
+    
     DesktopWindow *desktop = bbtool->findDesktopWindow(nr);
     if (!sticky) nr = 0;
     if (desktop == NULL) { //not on existing window
@@ -231,15 +239,28 @@ void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
                  1, bbtool->getCurrentScreenInfo()->depth(), 
                  InputOutput, bbtool->getCurrentScreenInfo()->visual(), 
                  create_mask, &attrib);
+        bbtool->insertEventHandler(pwin[nr], this);
     } else
         XMoveResizeWindow(display, pwin[nr], pager_x, pager_y, pager_width, pager_height);
 
 
     
     if (!focused)
-        XSetWindowBackgroundPixmap(display, pwin[nr], pixmap);
+    {
+        bt::Rect u(0, 0, width(), height());
+        bt::drawTexture(screen,
+                        getTexture(),
+                        pwin[nr], 
+                        u, u, pixmap);
+    }
     else
-        XSetWindowBackgroundPixmap(display, pwin[nr], pixmap_focused);
+    {
+        bt::Rect u(0, 0, width(), height());
+        bt::drawTexture(screen,
+                        getFocusedTexture(),
+                        pwin[nr], 
+                        u, u, pixmap_focused);
+    }
     
     if (!hidden /*&& !iconic*/ && !skip)
         XMapWindow(display, pwin[nr]);
@@ -362,9 +383,21 @@ void PagerWindow::configureNotifyEvent(const XConfigureEvent * const event)
         for (i = 0; i < number_of_desktops; i++) {
             XMoveResizeWindow(display, pwin[i], pager_x, pager_y, pager_width, pager_height);
             if (!focused)
-                XSetWindowBackgroundPixmap(display, pwin[i], pixmap);
+            {
+                bt::Rect u(0, 0, width(), height());
+                bt::drawTexture(screen,
+                        getTexture(),
+                        pwin[i], 
+                        u, u, pixmap);
+            }
             else
-                XSetWindowBackgroundPixmap(display, pwin[i], pixmap_focused);
+            {
+                bt::Rect u(0, 0, width(), height());
+                bt::drawTexture(screen,
+                        getFocusedTexture(),
+                        pwin[i], 
+                        u, u, pixmap_focused);
+            }
         }
  
     }
@@ -399,8 +432,14 @@ void PagerWindow::setFocus(void)
         if (resource->getFocusStyle() == border)
             XSetWindowBorder(display, pwin[i],
                      resource->pagerwin.activeColor.pixel(screen));
-        else 
-            XSetWindowBackgroundPixmap(display, pwin[i], pixmap_focused);
+        else
+        {
+            bt::Rect u(0, 0, width(), height());
+            bt::drawTexture(screen,
+                        getFocusedTexture(),
+                        pwin[i], 
+                        u, u, pixmap_focused);
+        }
         
         XClearWindow(display, pwin[i]);
    }
@@ -415,10 +454,41 @@ void PagerWindow::clearFocus(void)
             XSetWindowBorder(display, pwin[i],
                     resource->pagerwin.inactiveColor.pixel(screen));
         else
-            XSetWindowBackgroundPixmap(display, pwin[i], pixmap);
-
+        {
+            bt::Rect u(0, 0, width(), height());
+            bt::drawTexture(screen,
+                        getTexture(),
+                        pwin[i], 
+                        u, u, pixmap);
+        }
         XClearWindow(display, pwin[i]);
     }
     focused = false;
 }
 
+bt::Texture PagerWindow::getTexture(void) 
+{ 
+    return resource->pagerwin.texture; 
+}
+
+bt::Texture PagerWindow::getFocusedTexture(void) 
+{ 
+    return resource->pagerwin.focusedTexture; 
+}
+
+void PagerWindow::redraw(void)
+{
+    bt::Rect u(0, 0, width(), height());
+    int i;
+    for (i = 0; i < number_of_desktops; i++) { // i=1 for none sticky windows
+        bt::drawTexture(screen,
+                getTexture(),
+                pwin[i], 
+                u, u, pixmap);
+    }
+}
+
+void PagerWindow::exposeEvent(const XExposeEvent * const event)
+{
+    redraw();
+}

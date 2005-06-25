@@ -64,6 +64,11 @@ void WMInterface::updateWindowList(void)
         bt::EWMH::WindowList::iterator it = window_vect.begin();
         bt::EWMH::WindowList::iterator it_end = window_vect.end();
         for (; it != it_end; it++) {
+            // skip myself
+            if ((*it) == bbtool->frameWindow()->window())
+            {
+                continue;
+            }
             pwindow = bbtool->findPagerWindow((*it));
             if ( pwindow == NULL) { 
                 PagerWindow *pager_window = new PagerWindow(bbtool, *it);

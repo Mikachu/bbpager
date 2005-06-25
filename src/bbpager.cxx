@@ -403,7 +403,11 @@ void FrameWindow::buildWindow(bool reconfigure)
 
 //    disable shape, until we can get it working again
 //    if (!bbtool->configuration().isShaped()) {
-        XSetWindowBackgroundPixmap(display, win, pixmap);
+      bt::Rect u(0, 0, fwidth, fheight);
+      bt::drawTexture(screen,
+                       bbtool->resource->frame.texture,
+                        win, 
+                        u, u, pixmap);
 //    }
     XMapWindow(display, win);
 }
@@ -508,6 +512,15 @@ void FrameWindow::clientMessageEvent(const XClientMessageEvent * const event)
    if ((unsigned)event->data.l[0] == bbtool->wmDeleteWindowAtom()) {
         bbtool->shutdown();
    }
+}
+
+void FrameWindow::exposeEvent(const XExposeEvent * const event)
+{
+    bt::Rect u(0, 0, fwidth, fheight);
+    bt::drawTexture(screen,
+                     bbtool->resource->frame.texture,
+                     win, 
+                     u, u, pixmap);
 }
 
 void ToolWindow::MakeWindow(bool reconfigure) 

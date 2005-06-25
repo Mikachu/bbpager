@@ -62,16 +62,22 @@ public:
     int width(void) { return(pager_width); }
     int height(void) { return(pager_height); }
 
-    bool isMarked(void) { bool tmp = marked; marked = false; return(tmp); }
+    bool isMarked(void) { bool tmp = marked; marked = false; return(tmp); } 
     void mark(bool val) { marked = val; }
     void configureNotifyEvent(const XConfigureEvent * const event);
     void propertyNotifyEvent(const XPropertyEvent * const event);
+    void exposeEvent(const XExposeEvent * const event);
+    
     void raise(void);
     void lower(void);
+    void redraw(void);
 
     Pixmap getPixmap(void) { return(pixmap); }
     Pixmap getFocusedPixmap(void) { return(pixmap_focused); }
-
+    
+    bt::Texture getTexture(void);
+    bt::Texture getFocusedTexture(void);
+    
 private:
     ToolWindow *bbtool;
     bt::EWMH *ewmh;

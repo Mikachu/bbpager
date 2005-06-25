@@ -47,10 +47,14 @@ public:
     int y(void) { return(_y); }
     int width(void) { return(_width); }
     int height(void) { return(_height); }
+
+    void redraw(void);
 	
     virtual void buttonPressEvent(const XButtonEvent * const event);
     virtual void buttonReleaseEvent(const XButtonEvent * const event);
     virtual void motionNotifyEvent(const XMotionEvent * const event);
+    virtual void exposeEvent(const XExposeEvent * const event);
+
 private:
 	Window win;
     Window grabbedWindow;
@@ -63,6 +67,7 @@ private:
     int move_x;
     int move_y;
     bool moved;
+    bool m_focused;
 
     int screen;
 	::Display *display;

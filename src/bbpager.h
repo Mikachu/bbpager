@@ -27,6 +27,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+#include <list>
+
 // Blackbox library includes
 #include "Display.hh"
 #include "Application.hh"
@@ -43,7 +45,6 @@
 #include "desktop.h"
 
 
-#include <list>
 
 class Resource;
 class WMInterface;
@@ -68,7 +69,7 @@ public:
     virtual void buttonPressEvent(const XButtonEvent * const event);
     virtual void configureNotifyEvent(const XConfigureEvent * const event);
     virtual void clientMessageEvent(const XClientMessageEvent * const event);
-
+    virtual void exposeEvent(const XExposeEvent * const event);
 private:
 	Window win;
     ToolWindow *bbtool;
