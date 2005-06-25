@@ -302,7 +302,7 @@ FrameWindow::FrameWindow(ToolWindow *toolwindow) :
 {
     screen = bbtool->getCurrentScreen();
     display = bbtool->XDisplay();
-    pixmap = 0;
+    m_pixmap = 0;
     buildWindow(false);
 
     bbtool->insertEventHandler(win, this);
@@ -313,7 +313,7 @@ FrameWindow::~FrameWindow()
     bbtool->removeEventHandler(win);
     XUnmapWindow(display, win);
     /* destroy pixmaps */
-    if (pixmap) bt::PixmapCache::release(pixmap);
+    if (m_pixmap) bt::PixmapCache::release(m_pixmap);
     /* destroy windows */
     XDestroyWindow(display, win);
 }
@@ -323,7 +323,7 @@ void FrameWindow::buildWindow(bool reconfigure)
 
     calcSize();
 
-    pixmap = bt::PixmapCache::find(screen, 
+    m_pixmap = bt::PixmapCache::find(screen, 
              bbtool->resource->frame.texture, fwidth, fheight);
 
     if (!reconfigure) {
@@ -407,7 +407,7 @@ void FrameWindow::buildWindow(bool reconfigure)
       bt::drawTexture(screen,
                        bbtool->resource->frame.texture,
                         win, 
-                        u, u, pixmap);
+                        u, u, m_pixmap);
 //    }
     XMapWindow(display, win);
 }
@@ -520,7 +520,7 @@ void FrameWindow::exposeEvent(const XExposeEvent * const event)
     bt::drawTexture(screen,
                      bbtool->resource->frame.texture,
                      win, 
-                     u, u, pixmap);
+                     u, u, m_pixmap);
 }
 
 void ToolWindow::MakeWindow(bool reconfigure) 

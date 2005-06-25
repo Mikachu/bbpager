@@ -25,6 +25,8 @@
 
 #include "bbpager.h"
 
+class DesktopWindow;
+
 class PagerWindow : public bt::EventHandler 
 {
 	
@@ -116,6 +118,8 @@ private:
     void showWindow();
     void hideWindow();
     void destroyWindow();
+
+    DesktopWindow *m_pDesktop;
 };
 
 #endif // __PAGER_H

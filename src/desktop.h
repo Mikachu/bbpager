@@ -54,7 +54,8 @@ public:
     virtual void buttonReleaseEvent(const XButtonEvent * const event);
     virtual void motionNotifyEvent(const XMotionEvent * const event);
     virtual void exposeEvent(const XExposeEvent * const event);
-
+    Pixmap pixmap(void) { return m_pixmap; }
+    
 private:
 	Window win;
     Window grabbedWindow;
@@ -67,16 +68,19 @@ private:
     int move_x;
     int move_y;
     bool moved;
-    bool m_focused;
 
     int screen;
 	::Display *display;
     Resource *resource;
-	Pixmap pixmap;
-	Pixmap pixmap_focused;
-	
+
     ToolWindow *bbtool;
-	unsigned int desktop_id;
+
+    bool m_focused;
+	Pixmap m_pixmap;
+	Pixmap m_pixmapFocused;
+	
+
+    unsigned int desktop_id;
 	int _x;
 	int _y;
 	int _width;

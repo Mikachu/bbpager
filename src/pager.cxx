@@ -228,13 +228,13 @@ void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
 
 
     
-    DesktopWindow *desktop = bbtool->findDesktopWindow(nr);
+    m_pDesktop = bbtool->findDesktopWindow(nr);
     if (!sticky) nr = 0;
-    if (desktop == NULL) { //not on existing window
+    if (m_pDesktop == NULL) { //not on existing window
         return;
     }
     if (!reconfigure) {
-        pwin[nr] = XCreateWindow(display, desktop->window(),
+        pwin[nr] = XCreateWindow(display, m_pDesktop->window(),
                  pager_x, pager_y, pager_width, pager_height,
                  1, bbtool->getCurrentScreenInfo()->depth(), 
                  InputOutput, bbtool->getCurrentScreenInfo()->visual(), 
@@ -244,23 +244,7 @@ void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
         XMoveResizeWindow(display, pwin[nr], pager_x, pager_y, pager_width, pager_height);
 
 
-    
-    if (!focused)
-    {
-        bt::Rect u(0, 0, width(), height());
-        bt::drawTexture(screen,
-                        getTexture(),
-                        pwin[nr], 
-                        u, u, pixmap);
-    }
-    else
-    {
-        bt::Rect u(0, 0, width(), height());
-        bt::drawTexture(screen,
-                        getFocusedTexture(),
-                        pwin[nr], 
-                        u, u, pixmap_focused);
-    }
+    redraw(); 
     
     if (!hidden /*&& !iconic*/ && !skip)
         XMapWindow(display, pwin[nr]);
@@ -382,22 +366,7 @@ void PagerWindow::configureNotifyEvent(const XConfigureEvent * const event)
         unsigned int i;
         for (i = 0; i < number_of_desktops; i++) {
             XMoveResizeWindow(display, pwin[i], pager_x, pager_y, pager_width, pager_height);
-            if (!focused)
-            {
-                bt::Rect u(0, 0, width(), height());
-                bt::drawTexture(screen,
-                        getTexture(),
-                        pwin[i], 
-                        u, u, pixmap);
-            }
-            else
-            {
-                bt::Rect u(0, 0, width(), height());
-                bt::drawTexture(screen,
-                        getFocusedTexture(),
-                        pwin[i], 
-                        u, u, pixmap_focused);
-            }
+            redraw();
         }
  
     }
@@ -427,43 +396,14 @@ int PagerWindow::initWindowGeometry(void)
 
 void PagerWindow::setFocus(void)
 {
-    unsigned int i;
-    for (i = 0; i < number_of_desktops; i++) { // i=1 for none sticky windows
-        if (resource->getFocusStyle() == border)
-            XSetWindowBorder(display, pwin[i],
-                     resource->pagerwin.activeColor.pixel(screen));
-        else
-        {
-            bt::Rect u(0, 0, width(), height());
-            bt::drawTexture(screen,
-                        getFocusedTexture(),
-                        pwin[i], 
-                        u, u, pixmap_focused);
-        }
-        
-        XClearWindow(display, pwin[i]);
-   }
    focused = true;
+   redraw();
 }
 
 void PagerWindow::clearFocus(void)
 {
-    unsigned int i;
-    for (i = 0; i < number_of_desktops; i++) { // i=1 for none sticky windows
-        if (resource->getFocusStyle() == border)
-            XSetWindowBorder(display, pwin[i],
-                    resource->pagerwin.inactiveColor.pixel(screen));
-        else
-        {
-            bt::Rect u(0, 0, width(), height());
-            bt::drawTexture(screen,
-                        getTexture(),
-                        pwin[i], 
-                        u, u, pixmap);
-        }
-        XClearWindow(display, pwin[i]);
-    }
     focused = false;
+    redraw();
 }
 
 bt::Texture PagerWindow::getTexture(void) 
@@ -479,12 +419,115 @@ bt::Texture PagerWindow::getFocusedTexture(void)
 void PagerWindow::redraw(void)
 {
     bt::Rect u(0, 0, width(), height());
-    int i;
-    for (i = 0; i < number_of_desktops; i++) { // i=1 for none sticky windows
-        bt::drawTexture(screen,
-                getTexture(),
-                pwin[i], 
-                u, u, pixmap);
+    unsigned int i;
+    for (i = 0; i < number_of_desktops; i++)  // i=1 for none sticky windows
+    {
+        if (resource->getFocusStyle() == border)
+        {
+            if (pixmap == ParentRelative)
+            {
+                if (m_pDesktop->pixmap() == ParentRelative)
+                {
+                    bt::Rect t(-(x() + m_pDesktop->x()), 
+                               -(y() + m_pDesktop->y()), 
+                               bbtool->frameWindow()->width(), bbtool->frameWindow()->height());
+                    bt::drawTexture(screen,
+                                resource->frame.texture,
+                                pwin[i], 
+                                t, u, bbtool->frameWindow()->pixmap());
+                }
+                else
+                {
+                    bt::Rect t(-x(), -y(), m_pDesktop->width(), m_pDesktop->height());
+                    bt::drawTexture(screen,
+                                resource->desktopwin.texture,
+                                pwin[i], 
+                                t, u, m_pDesktop->pixmap());
+                }
+            }
+            else
+            {
+                bt::drawTexture(screen,
+                                getTexture(),
+                                pwin[i], 
+                                u, u, pixmap);
+            }
+        }
+        if (focused)
+        {
+            if (resource->getFocusStyle() == border)
+                XSetWindowBorder(display, pwin[i],
+                         resource->pagerwin.activeColor.pixel(screen));
+            else
+            {
+                if (pixmap == ParentRelative)
+                {
+                    if (m_pDesktop->pixmap() == ParentRelative)
+                    {
+                        bt::Rect t(-(x() + m_pDesktop->x()), 
+                                   -(y() + m_pDesktop->y()), 
+                                   bbtool->frameWindow()->width(), bbtool->frameWindow()->height());
+                        bt::drawTexture(screen,
+                                    resource->frame.texture,
+                                    pwin[i], 
+                                    t, u, bbtool->frameWindow()->pixmap());
+                    }
+                    else
+                    {                   
+                        bt::Rect t(-x(), -y(), m_pDesktop->width(), m_pDesktop->height());
+                        bt::drawTexture(screen,
+                                    resource->desktopwin.texture,
+                                    pwin[i], 
+                                    t, u, m_pDesktop->pixmap());
+                    }
+                }
+                else
+                {
+                    bt::drawTexture(screen,
+                            getFocusedTexture(),
+                            pwin[i], 
+                            u, u, pixmap_focused);
+                }
+            }
+        }
+        else
+        {
+            if (resource->getFocusStyle() == border)
+                XSetWindowBorder(display, pwin[i],
+                        resource->pagerwin.inactiveColor.pixel(screen));
+            else
+            {
+                if (pixmap == ParentRelative)
+                {
+                    if (m_pDesktop->pixmap() == ParentRelative)
+                    {
+
+                        bt::Rect t(-(x() + m_pDesktop->x()), 
+                                   -(y() + m_pDesktop->y()), 
+                                   bbtool->frameWindow()->width(), bbtool->frameWindow()->height());
+                        bt::drawTexture(screen,
+                                    resource->frame.texture,
+                                    pwin[i], 
+                                    t, u, bbtool->frameWindow()->pixmap());
+                    }
+                    else
+                    {
+                        bt::Rect t(-x(), -y(), m_pDesktop->width(), m_pDesktop->height());
+                        bt::drawTexture(screen,
+                                    resource->desktopwin.texture,
+                                    pwin[i], 
+                                    t, u, m_pDesktop->pixmap());
+                    }
+                }
+                else
+                { 
+                    bt::drawTexture(screen,
+                                getTexture(),
+                                pwin[i], 
+                                u, u, pixmap);
+                }
+            }
+        } 
     }
 }
 

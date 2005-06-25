@@ -70,10 +70,13 @@ public:
     virtual void configureNotifyEvent(const XConfigureEvent * const event);
     virtual void clientMessageEvent(const XClientMessageEvent * const event);
     virtual void exposeEvent(const XExposeEvent * const event);
+    Pixmap pixmap(void) { return m_pixmap; }
+    unsigned int width(void) {return fwidth; }
+    unsigned int height(void) { return fheight; }
 private:
 	Window win;
     ToolWindow *bbtool;
-	Pixmap pixmap;
+	Pixmap m_pixmap;
     int screen;
     ::Display *display;
     int fx;
