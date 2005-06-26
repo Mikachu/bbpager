@@ -35,6 +35,8 @@ public:
 	~PagerWindow(void);
  
     Window window(void);
+    Window window(int desktop);
+
 	Window realWindow(void) { return win; }
 	
 	int initWindowGeometry(void);

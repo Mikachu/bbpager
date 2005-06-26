@@ -90,6 +90,15 @@ PagerWindow::~PagerWindow(void)
     if (pixmap_focused) bt::PixmapCache::release(pixmap_focused);
 }
 
+Window PagerWindow::window(int nr)
+{
+    if (nr >= number_of_desktops)
+    {
+        return 0;
+    }
+    return pwin[nr];
+}
+        
 Window PagerWindow::window(void) 
 { 
     Window win;
@@ -97,7 +106,6 @@ Window PagerWindow::window(void)
         win = pwin[0];
     } else {
         int nr = bbtool->getCurrentDesktopNr();
-        //assert(nr >= number_of_desktops);
         win = pwin[nr];
     }
     return win; 

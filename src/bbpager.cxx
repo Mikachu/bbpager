@@ -152,8 +152,13 @@ PagerWindow *ToolWindow::findPPagerWindow(Window win)
 
     
     for (; it != pager_window_list.end(); it++) {
-        if ((*it)->window() == win) {
-            return *it;
+        int i = 0;
+        while ((*it)->window(i) != 0)
+        {
+            if ((*it)->window(i) == win) {
+                return *it;
+            }
+            i++;
         }
     }
     return NULL;
