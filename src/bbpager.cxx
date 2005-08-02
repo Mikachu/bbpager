@@ -428,31 +428,31 @@ void FrameWindow::calcSize(void)
     if (bbtool->resource->position.horizontal) {
         if (bbtool->numberOfDesktops() < static_cast<unsigned int>(bbtool->resource->columns)) {
             fwidth = (unsigned int)(bbtool->getResource()->desktopSize.width + 
-                     bbtool->resource->frame.bevelWidth) *
+                     bbtool->resource->frame.desktopMargin) *
                      (bbtool->numberOfDesktops() % bbtool->getResource()->columns) + 
-                     bbtool->getResource()->frame.bevelWidth;
+                     2 * bbtool->getResource()->frame.bevelWidth - bbtool->resource->frame.desktopMargin;
         } else {
             fwidth = (unsigned int)(bbtool->getResource()->desktopSize.width + 
-                 bbtool->getResource()->frame.bevelWidth) *
-                 bbtool->getResource()->columns + bbtool->getResource()->frame.bevelWidth;
+                 bbtool->getResource()->frame.desktopMargin) *
+                 bbtool->getResource()->columns + 2 * bbtool->getResource()->frame.bevelWidth - bbtool->resource->frame.desktopMargin;
         }
         fheight = (unsigned int)(((bbtool->numberOfDesktops() - 1) / bbtool->getResource()->columns + 1)*
                   (bbtool->getResource()->desktopSize.height + 
-                   bbtool->getResource()->frame.bevelWidth) + bbtool->getResource()->frame.bevelWidth);
+                   bbtool->getResource()->frame.desktopMargin) + 2 * bbtool->getResource()->frame.bevelWidth  - bbtool->resource->frame.desktopMargin);
 
     } else {
         fwidth = (unsigned int)((bbtool->numberOfDesktops() - 1) / bbtool->getResource()->rows + 1) *
                  (bbtool->getResource()->desktopSize.width + 
-                 bbtool->getResource()->frame.bevelWidth) + bbtool->getResource()->frame.bevelWidth;
+                 bbtool->getResource()->frame.desktopMargin) + 2 * bbtool->getResource()->frame.bevelWidth - bbtool->resource->frame.desktopMargin;
         if (bbtool->numberOfDesktops() < static_cast<unsigned int>(bbtool->getResource()->rows))
             fheight = (unsigned int)(bbtool->getResource()->desktopSize.height +
-                  bbtool->getResource()->frame.bevelWidth)*
+                  bbtool->getResource()->frame.desktopMargin) *
                   (bbtool->numberOfDesktops() % bbtool->getResource()->rows) + 
-                  bbtool->getResource()->frame.bevelWidth;
+                  2 * bbtool->getResource()->frame.bevelWidth - bbtool->resource->frame.desktopMargin;
         else
             fheight = (unsigned int)(bbtool->getResource()->desktopSize.height +
-                  bbtool->getResource()->frame.bevelWidth) *
-                  bbtool->getResource()->rows + bbtool->getResource()->frame.bevelWidth;
+                  bbtool->getResource()->frame.desktopMargin) *
+                  bbtool->getResource()->rows + 2 * bbtool->getResource()->frame.bevelWidth - bbtool->resource->frame.desktopMargin;
 
     }
 

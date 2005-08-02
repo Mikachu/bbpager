@@ -81,22 +81,9 @@ void DesktopWindow::buildWindow(bool reconfigure)
 
     m_pixmap = bt::PixmapCache::find(bbtool->getCurrentScreen(), 
              resource->desktopwin.texture, _width, _height, m_pixmap);
-    if (m_pixmap == 0 && 
-        resource->desktopwin.texture.texture() != (bt::Texture::Flat | bt::Texture::Solid)) 
-    {
-        cout << "Error: cannot create desktop m_pixmap with texture: \"";
-        cout << resource->desktopwin.texture.description() << "\"" << endl;
-    }
-
     if (resource->getDesktopFocusStyle() == texture) {
         m_pixmapFocused = bt::PixmapCache::find(bbtool->getCurrentScreen(), 
                  resource->desktopwin.focusedTexture, _width, _height, m_pixmapFocused);
-        if (m_pixmapFocused == 0 &&
-          resource->desktopwin.focusedTexture.texture() != (bt::Texture::Flat | bt::Texture::Solid))
-        {
-            cout << "Error: cannot create focused desktop m_pixmap with texture: \"";
-            cout << resource->desktopwin.focusedTexture.description() << "\"" << endl;
-        }
     }
     if (!reconfigure)
         win = XCreateWindow(display, bbtool->frameWindow()->window(), _x, _y, _width,
@@ -123,6 +110,7 @@ void DesktopWindow::calcPosition(void)
 {
     int column, row;
     unsigned int bw = bbtool->getResource()->frame.bevelWidth;
+    unsigned int margin =  bbtool->getResource()->frame.desktopMargin;
     if (bbtool->getResource()->position.horizontal) {
         // horizontal.
         row = (desktop_nr) / bbtool->getResource()->columns;
@@ -132,8 +120,8 @@ void DesktopWindow::calcPosition(void)
         row = (desktop_nr) % bbtool->getResource()->rows;
         column = (desktop_nr) / bbtool->getResource()->rows;
     }
-    _x = column * (bw + bbtool->getResource()->desktopSize.width) + bw;
-    _y = row * (bw +  bbtool->getResource()->desktopSize.height) + bw;
+    _x = column * (margin + bbtool->getResource()->desktopSize.width) + bw;
+    _y = row * (margin +  bbtool->getResource()->desktopSize.height) + bw;
 }
 
 void DesktopWindow::setFocus(void)

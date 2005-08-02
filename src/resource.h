@@ -38,6 +38,7 @@ struct FRAME {
     bt::Texture texture;
     int bevelWidth;
     XFontStruct *font;
+    int desktopMargin;
 };
 
 struct POSITION {

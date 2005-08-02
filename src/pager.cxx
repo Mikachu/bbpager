@@ -157,19 +157,9 @@ void PagerWindow::buildWindow(bool reconfigure)
 
     pixmap = bt::PixmapCache::find(screen, resource->pagerwin.texture, 
              pager_width, pager_height);
-    if (pixmap == 0 && 
-            resource->pagerwin.texture.texture() != (bt::Texture::Flat | bt::Texture::Solid)) {
-        cout << "Error: cannot create pager window pixmap with texture: \"";
-        cout << resource->pagerwin.texture.description() << "\"" << endl;
-    }
     if (resource->getFocusStyle()==texture) {
         pixmap_focused = bt::PixmapCache::find(screen, resource->pagerwin.focusedTexture,
             resource->desktopSize.width, resource->desktopSize.height);
-        if (pixmap == 0 &&
-               resource->pagerwin.focusedTexture.texture() != (bt::Texture::Flat | bt::Texture::Solid) ) {
-            cout << "Error: cannot create focused pager window pixmap with texture: \"";
-            cout << resource->pagerwin.focusedTexture.description() << "\"" << endl;
-        }
     }
     unsigned int i;
     if (!sticky) {
