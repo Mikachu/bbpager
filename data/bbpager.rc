@@ -55,8 +55,11 @@ bbpager.raised:                 True
 ! ** and change the value                                    **
 ! *************************************************************
 
-!** set bevelwidth
+!** set bevelwidth, margin between edge of tool and desktops
 !bbpager.bevelWidth:             4
+
+!** set margin between desktops
+!bbpager.desktop.margin:	 2
 
 !** define frame style **
 !bbpager.frame:                 Raised Gradient Vertical Bevel1
