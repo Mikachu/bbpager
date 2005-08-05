@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/bbpager.cxx)
-AM_INIT_AUTOMAKE(bbpager, 0.4.0)
+AM_INIT_AUTOMAKE(bbpager, 0.4.1beta1)
 
 AC_PREFIX_DEFAULT(/usr/local)
 
@@ -35,7 +35,6 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CPP
 AC_PROG_INSTALL
-AC_PROG_RANLIB
 AC_HEADER_STDC
 AC_CHECK_HEADERS(ctype.h fcntl.h libgen.h locale.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/stat.h sys/time.h sys/types.h sys/wait.h)
 AC_HEADER_TIME
