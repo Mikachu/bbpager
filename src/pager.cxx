@@ -458,7 +458,7 @@ void PagerWindow::redraw(void)
                          resource->pagerwin.activeColor.pixel(screen));
             else
             {
-                if (pixmap == ParentRelative)
+                if (pixmap_focused == ParentRelative)
                 {
                     if (m_pDesktop->pixmap() == ParentRelative)
                     {
