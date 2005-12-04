@@ -181,7 +181,8 @@ PagerWindow *ToolWindow::findFocusedPagerWindow()
 void ToolWindow::reconfigure(void) 
 {
     //resource->Reload();
-
+    delete resource;
+    resource = new Resource(this, config.rcFilename());
     MakeWindow(true);
   
     desktop_nr = 0;
