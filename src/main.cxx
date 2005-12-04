@@ -47,13 +47,14 @@ void Usage()
 	fprintf(stdout,"\n%s version %s \n", PACKAGE, VERSION);
 	fprintf(stdout,"Usage: %s [options]\n",PACKAGE);
 	fprintf(stdout,"Options:\n");
-	fprintf(stdout,"-display <display name>     X server to connect to\n");
-	fprintf(stdout,"-c[onfig] <filename>        Alternate config file\n");
-	fprintf(stdout,"-v[ersion]                  Display version number\n");
-	fprintf(stdout,"-h[elp]                     Display this help\n");
-	fprintf(stdout,"-geom[etry] <geometry>      Set geometry of window\n");
-	fprintf(stdout,"-d[ecorated]                Show 'normal' decorated window\n");
-	fprintf(stdout,"-w[ithdrawn]                Place bbtool in the Slit\n");
+	fprintf(stdout,"-display <display name>   X server to connect to\n");
+	fprintf(stdout,"-c[onfig] <filename>      Alternate config file\n");
+	fprintf(stdout,"-b[bconfig] <filename>    Alternate blackbox config file\n");
+	fprintf(stdout,"-v[ersion]                Display version number\n");
+	fprintf(stdout,"-h[elp]                   Display this help\n");
+	fprintf(stdout,"-geom[etry] <geometry>    Set geometry of window\n");
+	fprintf(stdout,"-d[ecorated]              Show 'normal' decorated window\n");
+	fprintf(stdout,"-w[ithdrawn]              Place bbtool in the Slit\n");
 //  disable shape, until we can get it working again
 //	fprintf(stdout,"-s[hape]                    Don't display groundplate\n");
 }
@@ -77,6 +78,13 @@ int main(int argc,char **argv)
 				exit(2);
 			};
 			options.setRcFilename(argv[i]);
+		} else if ((!strcmp(argv[i],"-bbconfig"))|(!strcmp(argv[i],"-b"))) {
+			if(++i==argc)  {
+				Usage();
+				exit(2);
+			};
+			options.setBlackboxRcFilename(argv[i]);
+
 		} else if ( (!strcmp(argv[i],"-v")) || (!strcmp(argv[i],"-version"))) {
 			fprintf(stderr," %s version %s\n", PACKAGE, VERSION);
 			exit(2);

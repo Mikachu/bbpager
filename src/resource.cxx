@@ -22,8 +22,8 @@
 #include "resource.h"
 #include "blackboxstyle.h"
 
-Resource::Resource(ToolWindow *toolwindow, const std::string &rc_file): 
-		BaseResource(*toolwindow, toolwindow->getCurrentScreen(), rc_file), bbtool(toolwindow)
+Resource::Resource(ToolWindow *toolwindow, const std::string &blackbox_rc_file, const std::string &rc_file): 
+		BaseResource(*toolwindow, toolwindow->getCurrentScreen(), blackbox_rc_file, rc_file), bbtool(toolwindow)
 {
 	load();
 }

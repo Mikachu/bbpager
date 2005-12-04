@@ -40,6 +40,11 @@ public:
 	const std::string &rcFilename(void) { return rc_filename; }
 	void setRcFilename(std::string filename) { rc_filename = filename; }
 
+    const std::string &blackboxRcFilename(void) 
+        { return blackbox_rc_filename; }
+	void setBlackboxRcFilename(std::string filename) 
+        { blackbox_rc_filename = filename; }
+
 	const std::string &appName(void) { return app_name; }
 	void setAppName(std::string name) { app_name = name; }
 
@@ -58,6 +63,7 @@ private:
 	std::string _geometry;
 	
 	std::string rc_filename;
+	std::string blackbox_rc_filename;
 	std::string app_name;
 	std::string display_name;
 };

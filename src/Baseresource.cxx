@@ -24,15 +24,22 @@
 #include <stdio.h>
 #include "Menu.hh"
 
-BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const std::string &filename) : 
+BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const std::string &blackbox_rc_filename, const std::string &filename) : 
 	app(_app), display(_app.display())
 {
 	const bt::ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
 	screen = _screen;
 
 	// get blackbox configuration file
-	bt_resource.load(std::string("~/.blackboxrc"));
-	
+    if (!blackbox_rc_filename.empty())
+    {
+        bt_resource.load(blackbox_rc_filename);
+    }
+    else
+    {
+    	bt_resource.load(std::string("~/.blackboxrc"));
+    }
+    
 	if (bt_resource.valid()) {
 		const std::string blackbox_stylefile = bt_resource.read("session.styleFile", "Session.StyleFile", "");
 
@@ -68,13 +75,13 @@ BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const st
 			}
 		}
 #endif
-    	if (!filename.empty()) {
-	    	bt_resource.merge(filename);
-        } else {
-			bt_resource.merge(std::string(BBTOOL_GLOBAL));
-            bt_resource.merge(std::string(BBTOOL_LOCAL));
-        }
-	}
+    }
+    if (!filename.empty()) {
+        bt_resource.merge(filename);
+    } else {
+        bt_resource.merge(std::string(BBTOOL_LOCAL));
+        bt_resource.merge(std::string(BBTOOL_GLOBAL));
+    }
 }
 
 BaseResource::~BaseResource()

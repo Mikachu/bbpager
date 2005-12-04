@@ -70,7 +70,7 @@ class ToolWindow;
 class Resource : public BaseResource {
 
 public:
-  Resource(ToolWindow *toolwindow, const std::string &rc_file);
+  Resource(ToolWindow *toolwindow, const std::string &blackbox_rc_file, const std::string &rc_file);
   ~Resource(void);
 
   struct FRAME frame;
