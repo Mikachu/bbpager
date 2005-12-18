@@ -52,7 +52,7 @@ ToolWindow::ToolWindow(Configuration cml_options):
     xa_wm_delete_window = XInternAtom(XDisplay(), "WM_DELETE_WINDOW", False);
 
 
-    resource = new Resource(this, config.rcFilename());
+    resource = new Resource(this, config.blackboxRcFilename(), config.rcFilename());
 
     _ewmh = new bt::EWMH(display());
     if (!_ewmh->readNumberOfDesktops(current_screen_info.rootWindow(), &number_of_desktops))
@@ -182,7 +182,7 @@ void ToolWindow::reconfigure(void)
 {
     //resource->Reload();
     delete resource;
-    resource = new Resource(this, config.rcFilename());
+    resource = new Resource(this, config.blackboxRcFilename(), config.rcFilename());
     MakeWindow(true);
   
     desktop_nr = 0;
