@@ -34,8 +34,8 @@ class BaseResource
 
 	public:
 		BaseResource(bt::Application &_app, 
-                     unsigned int _screen, c
-                     onst std::string &blackbox_rc_filename, 
+                     unsigned int _screen, 
+                     const std::string &blackbox_rc_filename, 
                      const std::string &filename);
 
 		virtual ~BaseResource(void);
