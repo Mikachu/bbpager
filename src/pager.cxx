@@ -87,12 +87,12 @@ PagerWindow::~PagerWindow(void)
     }
     delete [] pwin;
     if (pixmap) bt::PixmapCache::release(pixmap);
-    if (pixmap_focused) bt::PixmapCache::release(pixmap_focused);
+    if (pixmap_focused && resource->getFocusStyle() == texture) bt::PixmapCache::release(pixmap_focused);
 }
 
 Window PagerWindow::window(int nr)
 {
-    if (nr >= number_of_desktops)
+    if (static_cast<unsigned int>(nr) >= number_of_desktops)
     {
         return 0;
     }
@@ -128,38 +128,71 @@ void PagerWindow::lower(void)
 }
 
 
+void PagerWindow::calcGeometry()
+{
+  // Find the geometry of the original window that we're representing in the pager.
+  initWindowGeometry();
+
+  // Find the scaling factors necessary to scale the original window down to our pager window.
+  double xdiv = static_cast<double>(bbtool->getResource()->desktopSize.width) / bbtool->getCurrentScreenInfo()->width();
+  double ydiv = static_cast<double>(bbtool->getResource()->desktopSize.height) / bbtool->getCurrentScreenInfo()->height();
+
+  // Find the position of the pager window by scaling the original window position.
+  pager_x = (int)(window_x * xdiv);
+  pager_y = (int)(window_y * ydiv);
+
+  // Set the unadjusted size of the pager window by scaling the original window size.
+  pager_unfocus_width = (unsigned int)(window_width * xdiv);
+  pager_unfocus_height = (unsigned int)(window_height * ydiv);
+  pager_focus_width = (unsigned int)(window_width * xdiv);
+  pager_focus_height = (unsigned int)(window_height * ydiv);
+
+  // Because of the following:
+  //
+  //   1) we support different border widths for focused and unfocused windows
+  //   2) an X window's width property does not include its border width
+  //   3) we don't want our pager window's total width or height to change as
+  //      its focus changes
+  //
+  // We must adjust the width and height property of the pager window by subtracting
+  // out the appropriate border width.
+  //
+  pager_unfocus_width -= 2 * resource->pagerwin.inactiveWidth;
+  pager_unfocus_height -= 2 * resource->pagerwin.inactiveWidth;
+  pager_focus_width -= 2 * resource->pagerwin.activeWidth;
+  pager_focus_height -= 2 * resource->pagerwin.activeWidth;
+
+  // Reduce the pager window's height if it's shaded.
+  if (shaded) {
+    pager_unfocus_height = static_cast<unsigned int>(pager_unfocus_height * ydiv);
+    pager_focus_height = static_cast<unsigned int>(pager_focus_height * ydiv);
+  }
+
+  // Our adjustments may have created negative or zero width and height properties,
+  // so replace these with saner values.
+  if (pager_unfocus_width <= 0)
+    pager_unfocus_width = 1;
+  if (pager_unfocus_height <= 0)
+    pager_unfocus_height = 1;
+  if (pager_focus_width <= 0)
+    pager_focus_width = 1;
+  if (pager_focus_height <= 0)
+    pager_focus_height = 1;
+}
+
 void PagerWindow::buildWindow(bool reconfigure)
 {
-    double xdiv,ydiv;
-
 //    if (skip) return;       // don't build window if state skipPagerWindow is set.
-    initWindowGeometry();
-    xdiv = 10;
-    ydiv = 10;
+  calcGeometry();
+
     if (desktop_nr == static_cast<unsigned int>(-1)) {  // on all desktops
         sticky = true;
     }
-    xdiv = (double)resource->desktopSize.width / 
-        bbtool->getCurrentScreenInfo()->width();
-    ydiv = (double)resource->desktopSize.height / bbtool->getCurrentScreenInfo()->height();
-    pager_x = (int)(window_x * xdiv);
-    pager_y = (int)(window_y * ydiv);
-    pager_width = (unsigned int)(window_width * xdiv);
-    pager_height=(unsigned int)(window_height * ydiv);
-
-    if (shaded)
-        pager_height = static_cast<unsigned int>(pager_height * ydiv);
-    
-    if (pager_width == 0)   
-        pager_width = 1;
-    if (pager_height == 0) 
-        pager_height = 1;
-
     pixmap = bt::PixmapCache::find(screen, resource->pagerwin.texture, 
-             pager_width, pager_height);
+             pager_unfocus_width, pager_unfocus_height);
     if (resource->getFocusStyle()==texture) {
         pixmap_focused = bt::PixmapCache::find(screen, resource->pagerwin.focusedTexture,
-            resource->desktopSize.width, resource->desktopSize.height);
+            pager_focus_width, pager_focus_height);
     }
     unsigned int i;
     if (!sticky) {
@@ -189,6 +222,8 @@ void PagerWindow::buildWindow(bool reconfigure)
             buildPagerWindow(reconfigure, i);
         }
     }
+
+    redraw();
 }
 
 void PagerWindow::showWindow()
@@ -217,24 +252,25 @@ void PagerWindow::destroyWindow()
 
 void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
 {
-    unsigned long create_mask = CWBackPixmap|CWBorderPixel|CWEventMask ;
+  unsigned long create_mask = CWBackPixmap | CWEventMask ;
     XSetWindowAttributes attrib;
 
     attrib.background_pixmap = ParentRelative;
-    attrib.border_pixel=resource->pagerwin.inactiveColor.pixel(screen);
     attrib.event_mask = ExposureMask;
-
-
     
     m_pDesktop = bbtool->findDesktopWindow(nr);
     if (!sticky) nr = 0;
     if (m_pDesktop == NULL) { //not on existing window
         return;
     }
+
+  unsigned int pager_width = ( focused ? pager_focus_width : pager_unfocus_width );
+  unsigned int pager_height = ( focused ? pager_focus_height : pager_unfocus_height );
+
     if (!reconfigure) {
         pwin[nr] = XCreateWindow(display, m_pDesktop->window(),
                  pager_x, pager_y, pager_width, pager_height,
-                 1, bbtool->getCurrentScreenInfo()->depth(), 
+                 0, bbtool->getCurrentScreenInfo()->depth(), 
                  InputOutput, bbtool->getCurrentScreenInfo()->visual(), 
                  create_mask, &attrib);
         bbtool->insertEventHandler(pwin[nr], this);
@@ -242,7 +278,7 @@ void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
         XMoveResizeWindow(display, pwin[nr], pager_x, pager_y, pager_width, pager_height);
 
 
-    redraw(); 
+    //    redraw(); 
     
     if (!hidden /*&& !iconic*/ && !skip)
         XMapWindow(display, pwin[nr]);
@@ -253,7 +289,7 @@ void PagerWindow::buildPagerWindow(bool reconfigure, unsigned int nr)
 void PagerWindow::propertyNotifyEvent(const XPropertyEvent * const event)
 {
     if (event->atom == ewmh->wmDesktop()) {
-        unsigned int desktop_nr;
+      //unsigned int desktop_nr;
         ewmh->readWMDesktop(event->window, desktop_nr);
         if (desktop_nr == static_cast<unsigned int>(-1)) {
             if (!sticky) {
@@ -344,29 +380,7 @@ void PagerWindow::propertyNotifyEvent(const XPropertyEvent * const event)
 void PagerWindow::configureNotifyEvent(const XConfigureEvent * const event)
 {
     if (pwin) {
-        initWindowGeometry();
-        double xdiv = static_cast<double>(bbtool->getResource()->desktopSize.width) / bbtool->getCurrentScreenInfo()->width();
-        double ydiv = static_cast<double>(bbtool->getResource()->desktopSize.height) / bbtool->getCurrentScreenInfo()->height();
-        pager_x = (int)(window_x * xdiv);
-        pager_y = (int)(window_y * ydiv);
-        pager_width = (unsigned int)(window_width * xdiv);
-        pager_height=(unsigned int)(window_height * ydiv);
-
-        if (shaded)
-            pager_height = static_cast<unsigned int>(pager_height * ydiv);
-
-        if (pager_width == 0)   
-            pager_width = 1;
-        if (pager_height == 0) 
-            pager_height = 1;
-
-        // resize pager window, i = 0 for none sticky windows
-        unsigned int i;
-        for (i = 0; i < number_of_desktops; i++) {
-            XMoveResizeWindow(display, pwin[i], pager_x, pager_y, pager_width, pager_height);
-            redraw();
-        }
- 
+      redraw();
     }
 }
 
@@ -416,54 +430,42 @@ bt::Texture PagerWindow::getFocusedTexture(void)
 
 void PagerWindow::redraw(void)
 {
-    bt::Rect u(0, 0, width(), height());
+  calcGeometry();
+
+  bt::Rect u(0, 0, width(), height());
+
     unsigned int i;
-    for (i = 0; i < number_of_desktops; i++)  // i=1 for none sticky windows
+    for (i = 0; i < number_of_desktops; i++)  // number_of_desktops=1 for non-sticky windows
     {
-        if (resource->getFocusStyle() == border)
+      if (sticky) {
+        m_pDesktop = bbtool->findDesktopWindow(i);
+      }
+      else {
+        m_pDesktop = bbtool->findDesktopWindow(desktop_nr);
+      }
+
+      unsigned int pager_width = ( focused ? pager_focus_width : pager_unfocus_width );
+      unsigned int pager_height = ( focused ? pager_focus_height : pager_unfocus_height );
+
+      XMoveResizeWindow(display, pwin[i], pager_x, pager_y, pager_width, pager_height);
+
+      if (focused) {
+        XSetWindowBorderWidth(display, pwin[i], resource->pagerwin.activeWidth);
+        XSetWindowBorder(display, pwin[i], resource->pagerwin.activeColor.pixel(screen));
+      }
+      else {
+        XSetWindowBorderWidth(display, pwin[i], resource->pagerwin.inactiveWidth);
+        XSetWindowBorder(display, pwin[i], resource->pagerwin.inactiveColor.pixel(screen));
+      }
+
+        if (resource->getFocusStyle() == texture && focused)
         {
-            if (pixmap == ParentRelative)
-            {
-                if (m_pDesktop->pixmap() == ParentRelative)
-                {
-                    bt::Rect t(-(x() + m_pDesktop->x()), 
-                               -(y() + m_pDesktop->y()), 
-                               bbtool->frameWindow()->width(), bbtool->frameWindow()->height());
-                    bt::drawTexture(screen,
-                                resource->frame.texture,
-                                pwin[i], 
-                                t, u, bbtool->frameWindow()->pixmap());
-                }
-                else
-                {
-                    bt::Rect t(-x(), -y(), m_pDesktop->width(), m_pDesktop->height());
-                    bt::drawTexture(screen,
-                                resource->desktopwin.texture,
-                                pwin[i], 
-                                t, u, m_pDesktop->pixmap());
-                }
-            }
-            else
-            {
-                bt::drawTexture(screen,
-                                getTexture(),
-                                pwin[i], 
-                                u, u, pixmap);
-            }
-        }
-        if (focused)
-        {
-            if (resource->getFocusStyle() == border)
-                XSetWindowBorder(display, pwin[i],
-                         resource->pagerwin.activeColor.pixel(screen));
-            else
-            {
                 if (pixmap_focused == ParentRelative)
                 {
                     if (m_pDesktop->pixmap() == ParentRelative)
                     {
-                        bt::Rect t(-(x() + m_pDesktop->x()), 
-                                   -(y() + m_pDesktop->y()), 
+                        bt::Rect t(-(pager_x + m_pDesktop->desktopX()), 
+                                   -(pager_y + m_pDesktop->desktopY()), 
                                    bbtool->frameWindow()->width(), bbtool->frameWindow()->height());
                         bt::drawTexture(screen,
                                     resource->frame.texture,
@@ -472,9 +474,9 @@ void PagerWindow::redraw(void)
                     }
                     else
                     {                   
-                        bt::Rect t(-x(), -y(), m_pDesktop->width(), m_pDesktop->height());
+                        bt::Rect t(-pager_x, -pager_y, m_pDesktop->desktopWidth(), m_pDesktop->desktopHeight());
                         bt::drawTexture(screen,
-                                    resource->desktopwin.texture,
+                                    resource->getDesktopFocusStyle() == texture && m_pDesktop->focused() ? resource->desktopwin.focusedTexture : resource->desktopwin.texture,
                                     pwin[i], 
                                     t, u, m_pDesktop->pixmap());
                     }
@@ -486,22 +488,15 @@ void PagerWindow::redraw(void)
                             pwin[i], 
                             u, u, pixmap_focused);
                 }
-            }
         }
         else
         {
-            if (resource->getFocusStyle() == border)
-                XSetWindowBorder(display, pwin[i],
-                        resource->pagerwin.inactiveColor.pixel(screen));
-            else
-            {
                 if (pixmap == ParentRelative)
                 {
                     if (m_pDesktop->pixmap() == ParentRelative)
                     {
-
-                        bt::Rect t(-(x() + m_pDesktop->x()), 
-                                   -(y() + m_pDesktop->y()), 
+                        bt::Rect t(-(pager_x + m_pDesktop->desktopX()), 
+                                   -(pager_y + m_pDesktop->desktopY()), 
                                    bbtool->frameWindow()->width(), bbtool->frameWindow()->height());
                         bt::drawTexture(screen,
                                     resource->frame.texture,
@@ -510,9 +505,9 @@ void PagerWindow::redraw(void)
                     }
                     else
                     {
-                        bt::Rect t(-x(), -y(), m_pDesktop->width(), m_pDesktop->height());
+                        bt::Rect t(-pager_x, -pager_y, m_pDesktop->desktopWidth(), m_pDesktop->desktopHeight());
                         bt::drawTexture(screen,
-                                    resource->desktopwin.texture,
+                                    resource->getDesktopFocusStyle() == texture && m_pDesktop->focused() ? resource->desktopwin.focusedTexture : resource->desktopwin.texture,
                                     pwin[i], 
                                     t, u, m_pDesktop->pixmap());
                     }
@@ -524,7 +519,6 @@ void PagerWindow::redraw(void)
                                 pwin[i], 
                                 u, u, pixmap);
                 }
-            }
         } 
     }
 }

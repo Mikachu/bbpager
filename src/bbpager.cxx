@@ -338,12 +338,11 @@ void FrameWindow::buildWindow(bool reconfigure)
         XClassHint classhints;
         XTextProperty windowname;
 
-        unsigned long create_mask = CWBackPixmap | CWBorderPixel | CWEventMask;
+        unsigned long create_mask = CWBackPixmap | CWEventMask;
 
 
         
         attrib.background_pixmap = ParentRelative;
-        attrib.border_pixel = bbtool->resource->desktopwin.activeColor.pixel(screen);
         attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
                       FocusChangeMask | StructureNotifyMask | 
                       SubstructureRedirectMask;
@@ -425,37 +424,40 @@ void FrameWindow::resize(void)
 
 void FrameWindow::calcSize(void)
 {
+  int desktop_cols;
+  int desktop_rows;
 
-    if (bbtool->resource->position.horizontal) {
-        if (bbtool->numberOfDesktops() < static_cast<unsigned int>(bbtool->resource->columns)) {
-            fwidth = (unsigned int)(bbtool->getResource()->desktopSize.width + 
-                     bbtool->resource->frame.desktopMargin) *
-                     (bbtool->numberOfDesktops() % bbtool->getResource()->columns) + 
-                     2 * bbtool->getResource()->frame.bevelWidth - bbtool->resource->frame.desktopMargin;
-        } else {
-            fwidth = (unsigned int)(bbtool->getResource()->desktopSize.width + 
-                 bbtool->getResource()->frame.desktopMargin) *
-                 bbtool->getResource()->columns + 2 * bbtool->getResource()->frame.bevelWidth - bbtool->resource->frame.desktopMargin;
-        }
-        fheight = (unsigned int)(((bbtool->numberOfDesktops() - 1) / bbtool->getResource()->columns + 1)*
-                  (bbtool->getResource()->desktopSize.height + 
-                   bbtool->getResource()->frame.desktopMargin) + 2 * bbtool->getResource()->frame.bevelWidth  - bbtool->resource->frame.desktopMargin);
+  if (bbtool->resource->position.horizontal) {
+    desktop_cols = std::min(bbtool->numberOfDesktops(), static_cast<unsigned int>(bbtool->getResource()->columns));
+    desktop_rows = (int)((bbtool->numberOfDesktops() - 1) / bbtool->getResource()->columns + 1);
+  }
+  else {
+    desktop_cols = (int)((bbtool->numberOfDesktops() - 1) / bbtool->getResource()->rows + 1);
+    desktop_rows = std::min(bbtool->numberOfDesktops(), static_cast<unsigned int>(bbtool->getResource()->rows));
+  }
 
-    } else {
-        fwidth = (unsigned int)((bbtool->numberOfDesktops() - 1) / bbtool->getResource()->rows + 1) *
-                 (bbtool->getResource()->desktopSize.width + 
-                 bbtool->getResource()->frame.desktopMargin) + 2 * bbtool->getResource()->frame.bevelWidth - bbtool->resource->frame.desktopMargin;
-        if (bbtool->numberOfDesktops() < static_cast<unsigned int>(bbtool->getResource()->rows))
-            fheight = (unsigned int)(bbtool->getResource()->desktopSize.height +
-                  bbtool->getResource()->frame.desktopMargin) *
-                  (bbtool->numberOfDesktops() % bbtool->getResource()->rows) + 
-                  2 * bbtool->getResource()->frame.bevelWidth - bbtool->resource->frame.desktopMargin;
-        else
-            fheight = (unsigned int)(bbtool->getResource()->desktopSize.height +
-                  bbtool->getResource()->frame.desktopMargin) *
-                  bbtool->getResource()->rows + 2 * bbtool->getResource()->frame.bevelWidth - bbtool->resource->frame.desktopMargin;
+  int desktop_width =
+    bbtool->getResource()->desktopSize.width
+    + 2 * std::max(bbtool->getResource()->desktopwin.activeWidth, bbtool->getResource()->desktopwin.inactiveWidth)
+    ;
+  int desktop_height =
+    bbtool->getResource()->desktopSize.height
+    + 2 * std::max(bbtool->getResource()->desktopwin.activeWidth, bbtool->getResource()->desktopwin.inactiveWidth)
+    ;
 
-    }
+  fwidth =
+    desktop_cols * desktop_width 
+    + (desktop_cols - 1) * bbtool->getResource()->frame.desktopMargin
+    + 2 * bbtool->getResource()->frame.texture.borderWidth()
+    + 2 * bbtool->getResource()->frame.bevelWidth
+    ;
+
+  fheight =
+    desktop_rows * desktop_height
+    + (desktop_rows - 1) * bbtool->getResource()->frame.desktopMargin
+    + 2 * bbtool->getResource()->frame.texture.borderWidth()
+    + 2 * bbtool->getResource()->frame.bevelWidth
+    ;
 
     fx = bbtool->getResource()->position.x;
     fy = bbtool->getResource()->position.y;

@@ -40,13 +40,19 @@ public:
 	void reconfigure(void);
 	void buildWindow(bool reconfigure);
 
+        bool focused(void) { return m_focused; }
 	void setFocus(void);
 	void clearFocus(void);
 
-    int x(void) { return(_x); }
-    int y(void) { return(_y); }
-    int width(void) { return(_width); }
-    int height(void) { return(_height); }
+    int windowX(void) { return(_window_x); }
+    int windowY(void) { return(_window_y); }
+    int windowWidth(void) { return(_window_width); }
+    int windowHeight(void) { return(_window_height); }
+
+    int desktopX(void) { return(_desktop_x); }
+    int desktopY(void) { return(_desktop_y); }
+    int desktopWidth(void) { return(_desktop_width); }
+    int desktopHeight(void) { return(_desktop_height); }
 
     void redraw(void);
 	
@@ -81,14 +87,21 @@ private:
 	
 
     unsigned int desktop_id;
-	int _x;
-	int _y;
-	int _width;
-	int _height;
+	int _cell_x;
+	int _cell_y;
+	int _cell_width;
+	int _cell_height;
+	int _window_x;
+	int _window_y;
+	int _window_width;
+	int _window_height;
+	int _desktop_x;
+	int _desktop_y;
+	int _desktop_width;
+	int _desktop_height;
     unsigned int desktop_nr;
    
-    void calcPosition(void);
-
+    void calcGeometry(void);
 };
 
 #endif // __DESKTOP_H

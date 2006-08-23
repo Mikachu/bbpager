@@ -29,16 +29,10 @@
 /* bbpager.desktop */
 #define BB_LABEL "toolbar.label"
 #define BB_C_LABEL "Toolbar.Label"
-/* bbpager.bevelWidth */
-#define BB_BEVELWIDTH "toolbar.marginWidth"
-#define BB_C_BEVELWIDTH "Toolbar.MarginWidth"
-/* bbpager.window */
-#define BB_BUTTON "toolbar.button"
-#define BB_C_BUTTON "Toolbar.Button"
 /* bbpager.focused.window */
 #define BB_WINDOW_FOCUS "window.label.focus"
 #define BB_C_WINDOW_FOCUS "Window.Label.Focus"
-/* bbpager.focused.window */
+/* bbpager.window */
 #define BB_WINDOW_UNFOCUS "window.label.unfocus"
 #define BB_C_WINDOW_UNFOCUS "Window.Label.Unfocus"
 

@@ -63,11 +63,13 @@ void Resource::load(void)
 	if (button > 5 || button < 1) {
 		button = INVALID_BUTTON;
 	}
+	window_focus_button = static_cast<WHICH_BUTTON>(button);
 
 	button = readUInt("bbpager.windowRaiseButton", "Bbpager.WindowRaisebutton", INVALID_BUTTON);
 	if (button > 5 || button < 1) {
 		button = INVALID_BUTTON;
 	}
+	window_raise_button = static_cast<WHICH_BUTTON>(button);
 
 	Frame();
  
@@ -80,7 +82,7 @@ void Resource::load(void)
 void Resource::Frame() 
 {
 	frame.texture = readTexture("bbpager.frame","BbPager.Frame",BB_FRAME, BB_C_FRAME,
-				    "Raised Gradient Vertical Bevel1", "slategrey","darkslategrey");
+				    "Raised Gradient Vertical", "slategrey","darkslategrey");
 
 	frame.bevelWidth = readUInt("bbpager.bevelWidth","Bbpager.BevelWidth", 
                                 readUInt( "bbpager.margin","Bbpager.margin", 4));
@@ -169,15 +171,67 @@ void Resource::PagerWin()
 	else 
 		desktop_focus_style = border;
   
-	desktopwin.texture = readTexture("bbpager.desktop", "Bbpager.Desktop",
-			                 BB_LABEL,BB_C_LABEL,
-					 "Sunken Gradient Diagonal",
+          desktopwin.texture = readTexture("bbpager.desktop", "Bbpager.Desktop",
+                                           BB_LABEL,BB_C_LABEL,
+                                           "Sunken Gradient Diagonal",
 					 "slategrey","darkslategrey");
 
-	if (desktop_focus_style == texture)
+	if (desktop_focus_style == texture) {
 		desktopwin.focusedTexture = readTexture("bbpager.desktop.focus", "Bbpager.Desktop.Focus",
 						       "Sunken Gradient Diagonal",
 						       "darkslategrey","slategrey");
+        }
+
+        // Set the borders for active (focused) and inactive (unfocused) desktops.
+        //
+        // Try to set good defaults for the active and inactive border widths.
+        // We want the inactive border width always to default to 0. For the
+        // active border width, we start by setting it to 1, but in some cases
+        // we change it to 0. We want to change the default border width to 0
+        // whenever the border would be drawn around a desktop whose texture
+        // already has a border. This can occur in the following cases:
+        //
+        //   desktop_focus_style  border    texture
+        //   -------------------  --------  -------
+        //   none                 active    desktopwin.texture
+        //   border               active    desktopwin.texture
+        //   texture              active    desktopwin.focusedTexture
+        //
+        // We can ignore the none/active case for now, though, because that
+        // border width will be set automatically to whatever the none/inactive
+        // width turns out to be.
+
+        int default_desktop_inactive_width = 0;
+        int default_desktop_active_width = 1;
+
+        if (desktop_focus_style == border && desktopwin.texture.borderWidth() > 0) {
+          default_desktop_active_width = 0;
+        }
+        if (desktop_focus_style == texture && desktopwin.focusedTexture.borderWidth() > 0) {
+          default_desktop_active_width = 0;
+        }
+
+        desktopwin.inactiveColor = readColor("bbpager.inactive.desktop.borderColor",
+                                             "Bbpager.Inactive.desktop.BorderColor",
+                                             "black");
+        desktopwin.inactiveWidth = readInt("bbpager.inactive.desktop.borderWidth",
+                                           "Bbpager.Inactive.desktop.BorderWidth",
+                                           default_desktop_inactive_width);
+
+        if (desktop_focus_style == none) {
+          desktopwin.activeColor = desktopwin.inactiveColor;
+          desktopwin.activeWidth = desktopwin.inactiveWidth;
+        }
+        else {
+          desktopwin.activeColor = readColor("bbpager.active.desktop.borderColor",
+                                             "Bbpager.Active.desktop.BorderColor",
+                                             "LightGrey");
+
+          desktopwin.activeWidth = readInt("bbpager.active.desktop.borderWidth",
+                                           "Bbpager.Active.desktop.BorderWidth",
+                                           default_desktop_active_width);
+        }
+
 
 	std::string window_focus_style = readString("bbpager.window.focusStyle", "Bbpager.Window.FocusStyle", 
 						    "texture");
@@ -189,28 +243,75 @@ void Resource::PagerWin()
 	else 
 		pager_focus_style = texture;
 
-	pagerwin.texture = readTexture("bbpager.window", "Bbpager.Window",
-			               BB_WINDOW_UNFOCUS, BB_C_WINDOW_UNFOCUS,
-				       "Raised Gradient Diagonal",
+
+          pagerwin.texture = readTexture("bbpager.window", "Bbpager.Window",
+                                         BB_WINDOW_UNFOCUS, BB_C_WINDOW_UNFOCUS,
+                                         "Raised Gradient Diagonal",
 				       "rgb:c/9/6","rgb:8/6/4");
 
-	if (pager_focus_style == texture) 
+	if (pager_focus_style == texture) {
 		pagerwin.focusedTexture = readTexture("bbpager.window.focus","Bbpager.Window.Focus",
 						       BB_WINDOW_FOCUS,BB_C_WINDOW_FOCUS,
 		  				      "Raised Vertical Gradient",
 						      "rgb:c/9/6","rgb:8/6/4");
-  
- 	pagerwin.activeColor = readColor("bbpager.active.window.borderColor",
-			                 "Bbpager.active.Window.BorderColor",
-				          "LightGrey");
+        }
 
-	pagerwin.inactiveColor = readColor("bbpager.inactive.window.borderColor",
-					   "Bbpager.inactive.Window.BorderColor",
-					   "black");
+        // Set the borders for active (focused) and inactive (unfocused) windows.
+        //
+        // Try to set good defaults for the active and inactive border widths.
+        // We start by setting both to 1, but in some cases we change it to 0.
+        // We want to change the default border width to 0 whenever the border
+        // would be drawn around a window whose texture already has a border.
+        // This can occur in the following cases:
+        //
+        //   pager_focus_style  border    texture
+        //   -----------------  --------  -------
+        //   none               inactive  pagerwin.texture
+        //   none               active    pagerwin.texture
+        //   border             inactive  pagerwin.texture
+        //   border             active    pagerwin.texture
+        //   texture            inactive  pagerwin.texture
+        //   texture            active    pagerwin.focusedTexture
+        //
+        // We can ignore the none/active case for now, though, because that
+        // border width will be set automatically to whatever the none/inactive
+        // width turns out to be.
 
-	desktopwin.activeColor = readColor("bbpager.active.desktop.borderColor",
-					   "Bbpager.Active.desktop.BorderColor",
-					   "LightGrey");
+        int default_pager_inactive_width = 1;
+        int default_pager_active_width = 1;
+
+        if (pagerwin.texture.borderWidth() > 0) {
+          default_pager_inactive_width = 0;
+        }
+        if (pager_focus_style == border && pagerwin.texture.borderWidth() > 0) {
+          default_pager_active_width = 0;
+        }
+        if (pager_focus_style == texture && pagerwin.focusedTexture.borderWidth() > 0) {
+          default_pager_active_width = 0;
+        }
+
+
+          pagerwin.inactiveColor = readColor("bbpager.inactive.window.borderColor",
+                                             "Bbpager.inactive.Window.BorderColor",
+                                             "black");
+
+          pagerwin.inactiveWidth = readInt("bbpager.inactive.window.borderWidth",
+                                           "Bbpager.inactive.Window.BorderWidth",
+                                           default_pager_inactive_width);
+
+          if (pager_focus_style == none) {
+            pagerwin.activeColor = pagerwin.inactiveColor;
+            pagerwin.activeWidth = pagerwin.inactiveWidth;
+          }
+          else {
+            pagerwin.activeColor = readColor("bbpager.active.window.borderColor",
+                                             "Bbpager.active.Window.BorderColor",
+                                             "LightGrey");
+
+            pagerwin.activeWidth = readInt("bbpager.active.window.borderWidth",
+                                           "Bbpager.active.Window.BorderWidth",
+                                           default_pager_active_width);
+          }
 
 }
 

@@ -1,55 +1,64 @@
 This file gives a short description of the configuration possibilities of
-bbpager.
+bbpager. For blackbox users, bbpager attempts to copy the look of blackbox to
+help integrate itself visually in the blackbox environment. For all users,
+bbpager provides a flexible mechanism for specifying configuration options.
+
 
 ** Configuring bbpager **
-------------------------
+-------------------------
 
-Blackbox users:
+bbpager searches in several locations for its configuration options. In order
+of precedence (that is, an option defined in a location listed higher on the
+list will take precedence over an option defined lower on the list), these
+locations are:
 
-By default bbpager reads the Blackbox style-file as defined in .blackboxrc 
-and copies as much of the style as possible. The result is a application 
-which looks a lot like the toolbar. 
+1) bbpager-specific options in the blackbox style file. The location of the
+   blackbox style file is taken from the session.styleFile option in the
+   blackbox configuration file. By default bbpager looks for the blackbox
+   configuration file in $HOME/.blackboxrc, though an alternate location may be
+   given with the bbpager command-line option called -bbconfig. Specifying
+   bbpager-specific configuration options in the blackbox style file is useful
+   if the user wants to change some aspect of bbpager from one blackbox style
+   to another.
 
-Configuration options can be changed in bbpager.bb. 
-Most likely you want to change some of these options, 
+2) The bbpager configuration file specified by the -config command-line option.
+   If the -config command-line option is given, then bbpager reads the options
+   provided in the specified file and does NOT look for the local or global
+   configuration files described in (3) and (4) below.
 
-The global configuration file can be found in $datadir/bbtools/bbpager.rc
-A local configuration can be made by copying the bbpager.bb file to 
-$HOME/.bbtools/bbpager.rc and editing it.
+3) The user's local configuration file in $HOME/.bbtools/bbpager.rc . bbpager
+   will look in this location only if the -config command-line option was not
+   provided.
 
+4) The global configuration file in $datadir/bbtools/bbpager.rc . bbpager will
+   look in this location only if the -config command-line option was not
+   provided.
 
-Users other Window managers:
+5) blackbox options in the blackbox style file. From the style file, bbpager
+   will copy several of the blackbox look-and-feel options and use them as
+   defaults. These default values will be used unless the bbpager options are
+   explicitly specified elsewhere. See "Visual Integration with Blackbox" below.
 
-Configuration options can be changed in bbpager.rc. 
-Most likely you want to change some of these options, 
-
-The global configuration file can be found in $datadir/bbtools/bbpager.rc  
-A local configuration can be made by copying the bbpager.nobb file to 
-$HOME/.bbtools/bbpager.rc and editing it.
-
-
-** Reconfigure bbpager.**
-------------------------
-
-Automatic update style:
-	If the resource : bbpager.autoConfig: true
-	The tool will periodically check if the main config files, .blackboxrc
-	for Blackbox users and bbpager.nobb for other WM's to see if 
-	they have changed. If so bbpager will reconfigure.
+6) The bbpager source code, which contains last-resort values.
 
 
-** Copying the look of the Blackbox toolbar **
+** Visual Integration with Blackbox **
 ----------------------------------------------
-bbpager automaticly copes the style of the blackbox toolbar.
-It copies:
-toolbar                	 	-> bbpager.frame
-toolbar.label           	-> bbpager.label
-toolbar.color           	-> bbpager.frame.color
-toolbar.colorTo         	-> bbpager.frame.colorTo
-toolbar.label.color     	-> bbpager.label.color
-toolbar.label.colorTo   	-> bbpager.label.colorTo
-toolbar.textColor       	-> bbpager..textColor
-bevelWidth              	-> bbpager.bevelWidth
 
-For the meaning of the different resources see the comments in the
-config-files.
+If the blackbox configuration file exists, bbpager will use the current blackbox
+style to set a few of its default style options. Specifically, it will use the
+following textures as defaults:
+
+bbpager               blackbox
+-------               --------
+bbpager.frame         toolbar
+bbpager.desktop       toolbar.label
+bbpager.window        window.label.unfocus
+bbpager.window.focus  window.label.focus
+
+
+** Configuration Options **
+---------------------------
+
+Please see the the global configuration file for a complete list of the bbpager
+configuration options and a description of each.

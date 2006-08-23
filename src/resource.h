@@ -62,7 +62,9 @@ struct BBPAGERWIN {
   bt::Texture texture;
   bt::Texture focusedTexture;
   bt::Color activeColor;
+  int activeWidth;
   bt::Color inactiveColor;
+  int inactiveWidth;
 };
 
 class ToolWindow;

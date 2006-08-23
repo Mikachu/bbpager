@@ -56,15 +56,13 @@ public:
     bool isShaded(void) { return(shaded); }
     bool isSkipped(void) { return(skip); }
 
-    int x(void) { return pager_x; }
-    int y(void) { return pager_y; }
-    void x(int val) { pager_x = val; }
-    void y(int val) { pager_y = val; }
+    int x() { return pager_x; }
+    int y() { return pager_y; }
 
-    void width(int w) { pager_width = w; }
-    void height(int h) { pager_height = h; }
-    int width(void) { return(pager_width); }
-    int height(void) { return(pager_height); }
+    //void width(int w) { pager_width = w; }
+    //void height(int h) { pager_height = h; }
+    int width(void) { return focused ? pager_focus_width : pager_unfocus_width; }
+    int height(void) { return focused ? pager_focus_height : pager_unfocus_height; }
 
     bool isMarked(void) { bool tmp = marked; marked = false; return(tmp); } 
     void mark(bool val) { marked = val; }
@@ -110,8 +108,10 @@ private:
 
 	int pager_x;
 	int pager_y;
-	int pager_width;
-	int pager_height;
+	int pager_focus_width;
+	int pager_focus_height;
+	int pager_unfocus_width;
+	int pager_unfocus_height;
 	unsigned int desktop_nr;
 	bool sticky;
     unsigned int number_of_desktops;
@@ -120,6 +120,7 @@ private:
     void showWindow();
     void hideWindow();
     void destroyWindow();
+    void calcGeometry();
 
     DesktopWindow *m_pDesktop;
 };
