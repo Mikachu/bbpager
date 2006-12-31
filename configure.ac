@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/bbpager.cxx)
-AM_INIT_AUTOMAKE(bbpager, 0.4.2-beta)
+AM_INIT_AUTOMAKE(bbpager, 0.4.2)
 
 AC_PREFIX_DEFAULT(/usr/local)
 
