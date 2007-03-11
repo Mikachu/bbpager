@@ -77,7 +77,6 @@ private:
 
     int screen;
 	::Display *display;
-    Resource *resource;
 
     ToolWindow *bbtool;
 

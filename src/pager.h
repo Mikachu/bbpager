@@ -84,7 +84,6 @@ private:
     ToolWindow *bbtool;
     bt::EWMH *ewmh;
     int screen;
-    Resource *resource;
     ::Display *display;
 	Window win;
 	Window *pwin;

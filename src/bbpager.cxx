@@ -99,7 +99,10 @@ ToolWindow::~ToolWindow()
     for (; pit != pagerWindowList().end(); pit++) {
         delete (*pit);
     }
-
+    delete wminterface;
+    delete frame_window;
+    delete resource;
+    delete _ewmh;
 }
 
 void ToolWindow::moveWinToDesktop(PagerWindow *pager_window, unsigned int desktop_nr) 

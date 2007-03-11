@@ -40,7 +40,6 @@ DesktopWindow::DesktopWindow(ToolWindow *toolwindow, unsigned int _desktop_nr):
 {
     screen = bbtool->getCurrentScreen();
     display = bbtool->XDisplay();
-    resource = bbtool->getResource(); 
     desktop_nr = _desktop_nr;
     moved = false;
     buildWindow(false);
@@ -54,7 +53,11 @@ DesktopWindow::~DesktopWindow(void)
     bbtool->removeEventHandler(win);
     XDestroyWindow(bbtool->XDisplay(), win);
     if (m_pixmap) bt::PixmapCache::release(m_pixmap);
-    if (m_pixmapFocused && resource->getDesktopFocusStyle() == texture) bt::PixmapCache::release(m_pixmapFocused);
+    if (m_pixmapFocused && 
+       bbtool->getResource()->getDesktopFocusStyle() == texture)
+    {
+        bt::PixmapCache::release(m_pixmapFocused);
+    }
 }
 
 void DesktopWindow::reconfigure(void)
@@ -75,16 +78,27 @@ void DesktopWindow::buildWindow(bool reconfigure)
     calcGeometry();
     bbtool->frameWindow()->resize();
     m_pixmap = bt::PixmapCache::find(bbtool->getCurrentScreen(), 
-             resource->desktopwin.texture, _desktop_width, _desktop_height, m_pixmap);
-    if (resource->getDesktopFocusStyle() == texture) {
+             bbtool->getResource()->desktopwin.texture,
+             _desktop_width, _desktop_height, m_pixmap);
+    if (bbtool->getResource()->getDesktopFocusStyle() == texture) 
+    {
         m_pixmapFocused = bt::PixmapCache::find(bbtool->getCurrentScreen(), 
-                 resource->desktopwin.focusedTexture, _desktop_width, _desktop_height, m_pixmapFocused);
+                 bbtool->getResource()->desktopwin.focusedTexture, 
+                 _desktop_width, _desktop_height, m_pixmapFocused);
     }
     if (!reconfigure)
-        win = XCreateWindow(display, bbtool->frameWindow()->window(), _window_x, _window_y, _desktop_width,
-                           _desktop_height, 0, bbtool->getCurrentScreenInfo()->depth(),
-                           InputOutput, bbtool->getCurrentScreenInfo()->visual(),
-                           create_mask, &attrib);
+    {
+        win = XCreateWindow(display, 
+                            bbtool->frameWindow()->window(),
+                            _window_x, _window_y, 
+                            _desktop_width,
+                           _desktop_height, 0, 
+                           bbtool->getCurrentScreenInfo()->depth(),
+                           InputOutput, 
+                           bbtool->getCurrentScreenInfo()->visual(),
+                           create_mask, 
+                           &attrib);
+    }
     redraw();
     XClearWindow(display, bbtool->frameWindow()->window());
     XMapWindow(display, bbtool->frameWindow()->window());
@@ -95,46 +109,56 @@ void DesktopWindow::buildWindow(bool reconfigure)
 
 void DesktopWindow::calcGeometry(void)
 {
-  // We will define the geometry of 3 rectangles:
-  //
-  //   1) desktop - the area inside which all the pager windows will reside. This
-  //                is also the area that will be drawn using the desktop texture.
-  //                We do not want the size or position of this area to change as
-  //                the user moves from one desktop to another, that is, as the
-  //                desktop switches between its active (aka focused) and inactive
-  //                (aka unfocused) states.
-  //   2) window - the area encompassing both the desktop area as well as the
-  //               desktop border, if any. Because we support different border
-  //               widths for active and inactive desktops, and because we want
-  //               our desktop geometry to remain constant, the window geometry
-  //               may have to change as the desktop switches between its active
-  //               and inactive states.
-  //   3) cell - the area encompassing the larger of (a) the window area's size
-  //             when the desktop is active and (b) the window area's size when
-  //             the desktop is inactive. The geometry of this area will remain
-  //             constant as the desktop switches between its active and inactive
-  //             states.
-  //
-  // These rectangles will differ in size only when the user has specified
-  // different border widths for the active and inactive desktops.
+    // We will define the geometry of 3 rectangles:
+    //
+    //   1) desktop - the area inside which all the pager windows will reside. This
+    //                is also the area that will be drawn using the desktop texture.
+    //                We do not want the size or position of this area to change as
+    //                the user moves from one desktop to another, that is, as the
+    //                desktop switches between its active (aka focused) and inactive
+    //                (aka unfocused) states.
+    //   2) window - the area encompassing both the desktop area as well as the
+    //               desktop border, if any. Because we support different border
+    //               widths for active and inactive desktops, and because we want
+    //               our desktop geometry to remain constant, the window geometry
+    //               may have to change as the desktop switches between its active
+    //               and inactive states.
+    //   3) cell - the area encompassing the larger of (a) the window area's size
+    //             when the desktop is active and (b) the window area's size when
+    //             the desktop is inactive. The geometry of this area will remain
+    //             constant as the desktop switches between its active and inactive
+    //             states.
+    //
+    // These rectangles will differ in size only when the user has specified
+    // different border widths for the active and inactive desktops.
 
 
-  // ----- define sizes -----
+    // ----- define sizes -----
 
-  _desktop_width = resource->desktopSize.width;
-  _desktop_height = resource->desktopSize.height;
+    _desktop_width = bbtool->getResource()->desktopSize.width; //bbtool->getResource()->desktopSize.width;
+    _desktop_height = bbtool->getResource()->desktopSize.height;
 
-  if (m_focused) {
-    _window_width = _desktop_width + 2 * resource->desktopwin.activeWidth;
-    _window_height = _desktop_height + 2 * resource->desktopwin.activeWidth;
-  }
-  else {
-    _window_width = _desktop_width + 2 * resource->desktopwin.inactiveWidth;
-    _window_height = _desktop_height + 2 * resource->desktopwin.inactiveWidth;
-  }
-  
-  _cell_width = _desktop_width + 2 * std::max(resource->desktopwin.inactiveWidth, resource->desktopwin.activeWidth);
-  _cell_height = _desktop_height + 2 * std::max(resource->desktopwin.inactiveWidth, resource->desktopwin.activeWidth);
+    if (m_focused) 
+    {
+        _window_width = _desktop_width + 
+                        2 * bbtool->getResource()->desktopwin.activeWidth;
+        _window_height = _desktop_height + 
+                        2 * bbtool->getResource()->desktopwin.activeWidth;
+    }
+    else 
+    {
+        _window_width = _desktop_width + 
+                        2 * bbtool->getResource()->desktopwin.inactiveWidth;
+        _window_height = _desktop_height + 
+                        2 * bbtool->getResource()->desktopwin.inactiveWidth;
+    }
+
+    _cell_width = _desktop_width + 
+                  2 * std::max(bbtool->getResource()->desktopwin.inactiveWidth,
+                  bbtool->getResource()->desktopwin.activeWidth);
+    _cell_height = _desktop_height + 
+                  2 * std::max(bbtool->getResource()->desktopwin.inactiveWidth,
+                  bbtool->getResource()->desktopwin.activeWidth);
 
 
   // ----- define positions -----
@@ -145,19 +169,24 @@ void DesktopWindow::calcGeometry(void)
 
     // figure out what row and column we occupy
     int column, row;
-    if (bbtool->getResource()->position.horizontal) {
+    if (bbtool->getResource()->position.horizontal)
+    {
         // horizontal.
         row = (desktop_nr) / bbtool->getResource()->columns;
         column = (desktop_nr) % bbtool->getResource()->columns;
-    } else {
+    } 
+    else
+    {
         // vertical
         row = (desktop_nr) % bbtool->getResource()->rows;
         column = (desktop_nr) / bbtool->getResource()->rows;
     }
 
     // position the cell (relative to the frame origin) based on the current row/column
-    _cell_x = frame_border + frame_margin + column * (desktop_margin + _cell_width);
-    _cell_y = frame_border + frame_margin + row * (desktop_margin + _cell_height);
+    _cell_x = frame_border + frame_margin + 
+              column * (desktop_margin + _cell_width);
+    _cell_y = frame_border + frame_margin + 
+              row * (desktop_margin + _cell_height);
 
     // position the window so that it is centered within the cell
     _window_x = _cell_x + (_cell_width - _window_width) / 2;
@@ -183,26 +212,37 @@ void DesktopWindow::clearFocus(void)
 
 void DesktopWindow::buttonPressEvent(const XButtonEvent * const event)
 {
-    if (event->button == static_cast<unsigned>(resource->getDesktopChangeButton())) {
+    if (event->button == 
+        static_cast<unsigned>(bbtool->getResource()->getDesktopChangeButton()))
+    {
         bbtool->wminterface->changeDesktop(desktopId());
     }
-    if (event->button == static_cast<unsigned>(resource->getWindowRaiseButton())) {
+    if (event->button == 
+        static_cast<unsigned>(bbtool->getResource()->getWindowRaiseButton())) 
+    {
         PagerWindow *pager = bbtool->findPPagerWindow(event->subwindow);
-        if (pager) {
+        if (pager) 
+        {
             XRaiseWindow(display, pager->realWindow());
         } 
     }
-    if (event->button == static_cast<unsigned>(resource->getWindowFocusButton())) {
+    if (event->button == 
+        static_cast<unsigned>(bbtool->getResource()->getWindowFocusButton())) 
+    {
         PagerWindow *pager = bbtool->findPPagerWindow(event->subwindow);
-        if (pager) {
+        if (pager) 
+        {
             bbtool->wminterface->setWindowFocus(pager->realWindow());
         }
     }
-    if (event->button == static_cast<unsigned>(resource->getWindowMoveButton())) {
+    if (event->button == 
+        static_cast<unsigned>(bbtool->getResource()->getWindowMoveButton())) 
+    {
 //        DesktopWindow *desktop = findDesktopWindow(event->window);
         PagerWindow *pager = bbtool->findPPagerWindow(event->subwindow);
 
-        if (pager) {
+        if (pager) 
+        {
             XSetWindowAttributes attrib;
             unsigned long create_mask = CWBackPixmap|CWCursor;
 
@@ -222,16 +262,26 @@ void DesktopWindow::buttonPressEvent(const XButtonEvent * const event)
             grabbed_y = desktopY() + pager->y() - event->y;
             XMapWindow(display,grabbedWindow);
 
-            if (pager->isFocused()) {
-              XSetWindowBorderWidth(display, grabbedWindow, resource->pagerwin.activeWidth);
-              XSetWindowBorder(display, grabbedWindow, resource->pagerwin.activeColor.pixel(screen));
+            if (pager->isFocused()) 
+            {
+                XSetWindowBorderWidth(display, 
+                                  grabbedWindow, 
+                                  bbtool->getResource()->pagerwin.activeWidth);
+                XSetWindowBorder(display, 
+                    grabbedWindow, 
+                    bbtool->getResource()->pagerwin.activeColor.pixel(screen));
             }
-            else {
-              XSetWindowBorderWidth(display, grabbedWindow, resource->pagerwin.inactiveWidth);
-              XSetWindowBorder(display, grabbedWindow, resource->pagerwin.inactiveColor.pixel(screen));
+            else 
+            {
+                XSetWindowBorderWidth(display, 
+                        grabbedWindow, 
+                        bbtool->getResource()->pagerwin.inactiveWidth);
+                XSetWindowBorder(display, 
+                  grabbedWindow, 
+                  bbtool->getResource()->pagerwin.inactiveColor.pixel(screen));
             }
 
-            if (resource->getFocusStyle() == texture && pager->isFocused())
+            if (bbtool->getResource()->getFocusStyle() == texture && pager->isFocused())
             {
                 bt::Rect u(0, 0, pager->width(), pager->height());
                 if (pager->getPixmap() == ParentRelative)
@@ -240,9 +290,10 @@ void DesktopWindow::buttonPressEvent(const XButtonEvent * const event)
                     {
                         bt::Rect t(-(pager->x() + desktopX()), 
                                    -(pager->y() + desktopY()), 
-                                   bbtool->frameWindow()->width(), bbtool->frameWindow()->height());
+                                   bbtool->frameWindow()->width(), 
+                                   bbtool->frameWindow()->height());
                         bt::drawTexture(screen,
-                                    resource->frame.texture,
+                                    bbtool->getResource()->frame.texture,
                                     grabbedWindow, 
                                     t, u, bbtool->frameWindow()->pixmap());
                     }
@@ -250,9 +301,14 @@ void DesktopWindow::buttonPressEvent(const XButtonEvent * const event)
                     {                   
                         bt::Rect t(-pager->x(), -pager->y(), desktopWidth(), desktopHeight());
                         bt::drawTexture(screen,
-                                    (resource->getDesktopFocusStyle() == texture && m_focused ? resource->desktopwin.focusedTexture : resource->desktopwin.texture),
-                                    grabbedWindow, 
-                                    t, u, pixmap());
+                            (bbtool->getResource()->getDesktopFocusStyle() == 
+                             texture && m_focused ? 
+                             bbtool->getResource()->desktopwin.focusedTexture :
+                             bbtool->getResource()->desktopwin.texture),
+                             grabbedWindow, 
+                             t, 
+                             u, 
+                             pixmap());
                     }
                 }
                 else
@@ -272,9 +328,10 @@ void DesktopWindow::buttonPressEvent(const XButtonEvent * const event)
                     {
                         bt::Rect t(-(pager->x() + desktopX()), 
                                    -(pager->y() + desktopY()), 
-                                   bbtool->frameWindow()->width(), bbtool->frameWindow()->height());
+                                   bbtool->frameWindow()->width(), 
+                                   bbtool->frameWindow()->height());
                         bt::drawTexture(screen,
-                                    resource->frame.texture,
+                                    bbtool->getResource()->frame.texture,
                                     grabbedWindow, 
                                     t, u, bbtool->frameWindow()->pixmap());
                     }
@@ -282,9 +339,14 @@ void DesktopWindow::buttonPressEvent(const XButtonEvent * const event)
                     {                   
                         bt::Rect t(-pager->x(), -pager->y(), desktopWidth(), desktopHeight());
                         bt::drawTexture(screen,
-                                    (resource->getDesktopFocusStyle() == texture && m_focused ? resource->desktopwin.focusedTexture : resource->desktopwin.texture),
-                                    grabbedWindow, 
-                                    t, u, pixmap());
+                            (bbtool->getResource()->getDesktopFocusStyle() == 
+                             texture && m_focused ? 
+                             bbtool->getResource()->desktopwin.focusedTexture :
+                             bbtool->getResource()->desktopwin.texture),
+                             grabbedWindow, 
+                             t, 
+                             u, 
+                             pixmap());
                     }
                 }
                 else
@@ -312,28 +374,37 @@ void DesktopWindow::buttonPressEvent(const XButtonEvent * const event)
 
 void DesktopWindow::buttonReleaseEvent(const XButtonEvent * const event)
 {
-    if (event->button == static_cast<unsigned>(resource->getWindowMoveButton())) {
-        if (grabbedWindow != 0) {
-            if (!moved) {
+    if (event->button == 
+        static_cast<unsigned>(bbtool->getResource()->getWindowMoveButton())) {
+        if (grabbedWindow != 0) 
+        {
+            if (!moved) 
+            {
                 XDestroyWindow(display, grabbedWindow);
                 grabbedWindow = 0;
                 return;
             }
-            list<DesktopWindow *>::iterator it = bbtool->desktopWindowList().begin();
-            for (; it != bbtool->desktopWindowList().end(); it++) {
+            list<DesktopWindow *>::iterator it = 
+                                bbtool->desktopWindowList().begin();
+            for (; it != bbtool->desktopWindowList().end(); it++) 
+            {
                 if (move_x > (*it)->windowX() - (*it)->windowWidth() &&
-                          move_x <= (*it)->windowX() + (*it)->windowWidth() &&
-                          move_y > (*it)->windowY() - (*it)->windowHeight() &&
-                          move_y < (*it)->windowY() + (*it)->windowHeight())
+                    move_x <= (*it)->windowX() + (*it)->windowWidth() &&
+                    move_y > (*it)->windowY() - (*it)->windowHeight() &&
+                    move_y < (*it)->windowY() + (*it)->windowHeight())
                 break;
             } 
-            if (it != bbtool->desktopWindowList().end()) {
+            if (it != bbtool->desktopWindowList().end()) 
+            {
                 if (!moveWindow->isSticky()) 
-                    bbtool->wminterface->sendWindowToDesktop(realWindow, (*it)->desktopId());
-                double xdiv = static_cast<double>(resource->desktopSize.width) /
-                             bbtool->getCurrentScreenInfo()->width();
-                double ydiv = static_cast<double>(resource->desktopSize.height) /
-                             bbtool->getCurrentScreenInfo()->height();
+                    bbtool->wminterface->sendWindowToDesktop(realWindow, 
+                            (*it)->desktopId());
+                double xdiv = 
+                 static_cast<double>(bbtool->getResource()->desktopSize.width) /
+                 bbtool->getCurrentScreenInfo()->width();
+                double ydiv = 
+                static_cast<double>(bbtool->getResource()->desktopSize.height) /
+                bbtool->getCurrentScreenInfo()->height();
 
                 int x = static_cast<int>((move_x - (*it)->desktopX()) / xdiv);
                 int y = static_cast<int>((move_y - (*it)->desktopY()) / ydiv);
@@ -365,53 +436,82 @@ void DesktopWindow::motionNotifyEvent(const XMotionEvent * const event)
 void DesktopWindow::redraw(void)
 {
     calcGeometry();
-    XMoveResizeWindow(bbtool->XDisplay(), win, _window_x, _window_y, _desktop_width, _desktop_height);
+    XMoveResizeWindow(bbtool->XDisplay(), 
+                      win, 
+                      _window_x, 
+                      _window_y, 
+                      _desktop_width, 
+                      _desktop_height);
 
-    if (m_focused) {
-      XSetWindowBorderWidth(display, win, resource->desktopwin.activeWidth);
-      XSetWindowBorder(display, win, resource->desktopwin.activeColor.pixel(screen));
+    if (m_focused) 
+    {
+        XSetWindowBorderWidth(display, 
+                              win, 
+                              bbtool->getResource()->desktopwin.activeWidth);
+        XSetWindowBorder(display, 
+                  win, 
+                  bbtool->getResource()->desktopwin.activeColor.pixel(screen));
     }
-    else {
-      XSetWindowBorderWidth(display, win, resource->desktopwin.inactiveWidth);
-      XSetWindowBorder(display, win, resource->desktopwin.inactiveColor.pixel(screen));
+    else 
+    {
+        XSetWindowBorderWidth(display, 
+                win, 
+                bbtool->getResource()->desktopwin.inactiveWidth);
+        XSetWindowBorder(display, 
+                win, 
+                bbtool->getResource()->desktopwin.inactiveColor.pixel(screen));
     }
 
     bt::Rect u(0, 0, desktopWidth(), desktopHeight());
     
-    if (resource->getDesktopFocusStyle() == texture && m_focused)
+    if (bbtool->getResource()->getDesktopFocusStyle() == texture && m_focused)
     {
             if (m_pixmapFocused == ParentRelative)
             {
-                bt::Rect t(-desktopX(), -desktopY(), bbtool->frameWindow()->width(), bbtool->frameWindow()->height());
+                bt::Rect t(-desktopX(), 
+                           -desktopY(), 
+                           bbtool->frameWindow()->width(), 
+                           bbtool->frameWindow()->height());
                 bt::drawTexture(screen,
-                                resource->frame.texture,
-                                 win, 
-                                 t, u, bbtool->frameWindow()->pixmap());
+                                bbtool->getResource()->frame.texture,
+                                win, 
+                                t, 
+                                u, 
+                                bbtool->frameWindow()->pixmap());
             }
             else
             {
                 bt::drawTexture(screen,
-                                resource->desktopwin.focusedTexture,
-                                win, 
-                                u, u, m_pixmapFocused);
+                            bbtool->getResource()->desktopwin.focusedTexture,
+                            win, 
+                            u, 
+                            u, 
+                            m_pixmapFocused);
             }
     }
     else
     {
             if (m_pixmap == ParentRelative)
             {
-                bt::Rect t(-desktopX(), -desktopY(), bbtool->frameWindow()->width(), bbtool->frameWindow()->height());
+                bt::Rect t(-desktopX(), 
+                           -desktopY(), 
+                           bbtool->frameWindow()->width(), 
+                           bbtool->frameWindow()->height());
                 bt::drawTexture(screen,
-                                resource->frame.texture,
-                                 win, 
-                                 t, u, bbtool->frameWindow()->pixmap());
+                                bbtool->getResource()->frame.texture,
+                                win, 
+                                t, 
+                                u, 
+                                bbtool->frameWindow()->pixmap());
             }
             else
             {
                 bt::drawTexture(screen,
-                                resource->desktopwin.texture,
+                                bbtool->getResource()->desktopwin.texture,
                                 win, 
-                                u, u, m_pixmap);
+                                u, 
+                                u, 
+                                m_pixmap);
             }
     }
 }
