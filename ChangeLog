@@ -1,3 +1,6 @@
+version-0.4.3
+- Fixed crash when reconfiguring (happens automatically when withdrawn).
+
 version-0.4.2
 Integrated patches provided by Joey Morris, fixing the following problems:
  - add more flexible border support in bbpager (see README.bbpager)
