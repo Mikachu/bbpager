@@ -1,3 +1,6 @@
+version-0.4.5
+- Fix compiler issue
+
 version-0.4.4
 - Fix redraw issue when in slit.
 
