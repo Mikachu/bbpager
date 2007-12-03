@@ -355,7 +355,7 @@ void FrameWindow::buildWindow(bool reconfigure)
                              bbtool->getCurrentScreenInfo()->visual(), 
                              create_mask, &attrib);
 
-        char *name="bbpager"; //BBTOOL;
+        char *name= (char *)"bbpager"; //BBTOOL;
      
         if (bbtool->configuration().isWithdrawn()) {
             wmhints.initial_state = WithdrawnState;
@@ -366,8 +366,8 @@ void FrameWindow::buildWindow(bool reconfigure)
         wmhints.flags = StateHint | InputHint;
         wmhints.input = False;
      
-        classhints.res_name = "bbager"; // BBTOOL;
-        classhints.res_class = "bbtools";
+        classhints.res_name = (char *)"bbager"; // BBTOOL;
+        classhints.res_class = (char *)"bbtools";
               
         XStringListToTextProperty(&name, 1, &windowname);
         XSetWMProperties(display, win ,&windowname, NULL, bbtool->configuration().argv(), 
@@ -417,7 +417,10 @@ void FrameWindow::buildWindow(bool reconfigure)
                         win, 
                         u, u, m_pixmap);
 //    }
-    XMapWindow(display, win);
+    if (!reconfigure)
+    {
+        XMapWindow(display, win);
+    }
 }
 
 void FrameWindow::resize(void)
