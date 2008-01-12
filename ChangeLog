@@ -1,3 +1,6 @@
+version-0.4.6
+- When the size of a window increased, it was not displayed in the pager.
+
 version-0.4.5
 - Fix compiler issue
 
