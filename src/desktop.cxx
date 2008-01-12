@@ -436,6 +436,16 @@ void DesktopWindow::motionNotifyEvent(const XMotionEvent * const event)
 void DesktopWindow::redraw(void)
 {
     calcGeometry();
+    m_pixmap = bt::PixmapCache::find(bbtool->getCurrentScreen(), 
+             bbtool->getResource()->desktopwin.texture,
+             _desktop_width, _desktop_height, m_pixmap);
+    if (bbtool->getResource()->getDesktopFocusStyle() == texture) 
+    {
+        m_pixmapFocused = bt::PixmapCache::find(bbtool->getCurrentScreen(), 
+                 bbtool->getResource()->desktopwin.focusedTexture, 
+                 _desktop_width, _desktop_height, m_pixmapFocused);
+    }
+
     XMoveResizeWindow(bbtool->XDisplay(), 
                       win, 
                       _window_x, 

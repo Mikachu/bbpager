@@ -539,9 +539,22 @@ bt::Texture PagerWindow::getFocusedTexture(void)
 
 void PagerWindow::redraw(void)
 {
-  calcGeometry();
+    calcGeometry();
 
-  bt::Rect u(0, 0, width(), height());
+    bt::Rect u(0, 0, width(), height());
+
+    pixmap = bt::PixmapCache::find(screen, 
+                         bbtool->getResource()->pagerwin.texture, 
+                         pager_unfocus_width, 
+                         pager_unfocus_height);
+    if (bbtool->getResource()->getFocusStyle()==texture) 
+    {
+        pixmap_focused = bt::PixmapCache::find(screen, 
+                bbtool->getResource()->pagerwin.focusedTexture,
+                pager_focus_width, 
+                pager_focus_height);
+    }
+
 
     unsigned int i;
     for (i = 0; i < number_of_desktops; i++)  // number_of_desktops=1 
@@ -567,6 +580,8 @@ void PagerWindow::redraw(void)
                           pager_y, 
                           pager_width, 
                           pager_height);
+
+        printf("p: %d %d\n", pager_width, pager_height);
 
         if (focused) 
         {
@@ -623,6 +638,8 @@ void PagerWindow::redraw(void)
             }
             else
             {
+
+                printf("u: %d %d\n", u.width(), u.height());
                 bt::drawTexture(screen,
                                 getFocusedTexture(),
                                 pwin[i], 
@@ -674,7 +691,8 @@ void PagerWindow::redraw(void)
                                 u, 
                                 pixmap);
             }
-        } 
+        }
+
     }
 }
 
