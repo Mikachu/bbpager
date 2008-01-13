@@ -86,13 +86,8 @@ void Resource::Frame()
 
     frame.bevelWidth = readUInt("bbpager.bevelWidth","Bbpager.BevelWidth", 
                                 readUInt( "bbpager.margin","Bbpager.margin", 4));
-    if (frame.bevelWidth == 0)
-        frame.bevelWidth = 4;
-
     frame.desktopMargin = readUInt("bbpager.desktop.bevelWidth","Bbpager.desktop.BevelWidth", 
                                 readUInt( "bbpager.desktop.margin","Bbpager.desktop.margin", frame.bevelWidth));
-    if (frame.desktopMargin == 0)
-        frame.desktopMargin = 4;
 }
 
 
