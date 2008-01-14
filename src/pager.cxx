@@ -581,7 +581,6 @@ void PagerWindow::redraw(void)
                           pager_width, 
                           pager_height);
 
-        printf("p: %d %d\n", pager_width, pager_height);
 
         if (focused) 
         {
@@ -639,7 +638,6 @@ void PagerWindow::redraw(void)
             else
             {
 
-                printf("u: %d %d\n", u.width(), u.height());
                 bt::drawTexture(screen,
                                 getFocusedTexture(),
                                 pwin[i], 
