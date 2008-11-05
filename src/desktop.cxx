@@ -232,7 +232,7 @@ void DesktopWindow::buttonPressEvent(const XButtonEvent * const event)
         PagerWindow *pager = bbtool->findPPagerWindow(event->subwindow);
         if (pager) 
         {
-            bbtool->wminterface->setWindowFocus(pager->realWindow());
+            bbtool->wminterface->setWindowFocus(pager->realWindow(), event->time);
         }
     }
     if (event->button == 

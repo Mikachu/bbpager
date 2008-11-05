@@ -40,7 +40,7 @@ class WMInterface : public bt::EventHandler
         void removeSticky(Window,int);
         void addSticky(WindowList *);
         void sendWindowToDesktop(Window,int);
-        void setWindowFocus(Window);
+        void setWindowFocus(Window, Time);
         int isIconicState(Window);
         void changeIconState(Window);
         void windowAttributeChange(Window);

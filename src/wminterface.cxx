@@ -122,10 +122,10 @@ void WMInterface::sendWindowToDesktop(Window win,int desk_number)
     sendClientMessage(win, ewmh->wmDesktop(), desk_number);
 }
 
-void WMInterface::setWindowFocus(Window win) 
+void WMInterface::setWindowFocus(Window win, Time time) 
 {
     //ewmh->setActiveWindow(root_window, win);
-    sendClientMessage(win, ewmh->activeWindow(), win);
+    sendClientMessage(win, ewmh->activeWindow(), 2, time);
 
 }
 
