@@ -1,6 +1,7 @@
-CPPFLAGS = @CPPFLAGS@ @SHAPE@ \
+AM_CPPFLAGS = $(CPPFLAGS) -DSHAPE \
 -DBBTOOL_GLOBAL=\"$(datadir)/bbtools/bbpager.rc\" \
 -DBBTOOL_LOCAL=\"~/.bbtools/bbpager.rc\"
+AM_CXXFLAGS = $(X_CFLAGS) $(XEXT_CFLAGS) $(LIBBT_CFLAGS)
 				
 bin_PROGRAMS = bbpager
 bbpager_SOURCES = bbpager.cxx bbpager.h \
@@ -12,5 +13,6 @@ bbpager_SOURCES = bbpager.cxx bbpager.h \
          pager.cxx pager.h \
          desktop.cxx desktop.h
 #		 pagermenu.cc pagermenu.hh \
-bbpager_LDADD = @X_LIBS@
+#
+
 

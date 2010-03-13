@@ -39,36 +39,41 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(ctype.h fcntl.h libgen.h locale.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/stat.h sys/time.h sys/types.h sys/wait.h)
 AC_HEADER_TIME
 
-AC_CHECK_FUNCS(setlocale sigaction strftime)
-
-AC_PATH_X
-AC_PATH_XTRA
-
-CFLAGS="$CFLAGS $X_CFLAGS"
-CXXFLAGS="$CXXFLAGS $X_CFLAGS"
-LDFLAGS="$LDFLAGS $X_LIBS $X_PRE_LIBS"
-dnl Checks for X libraries.
-AC_CHECK_LIB(X11, XOpenDisplay, LDFLAGS="$LDFLAGS -lX11",
-             AC_MSG_ERROR(XOpenDisplay not found in -lX11))
-
-dnl Checks for Xextension
-SHAPE=
-AC_CHECK_LIB(Xext, XMissingExtension, LIBS="$LIBS -lXext"; SHAPE="-DSHAPE",
-             AC_MSG_ERROR(XMissingExtension not found in -lXext))
-AC_SUBST(SHAPE)
-
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-AC_HEADER_TIME
 AC_STRUCT_TM
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS(select strstr)
 
+AC_CHECK_FUNCS(setlocale sigaction strftime)
+
+AC_PATH_X
+AC_PATH_XTRA
+
+dnl Checks for X libraries.
+AC_CHECK_LIB([X11],
+	[XOpenDisplay],
+	[],
+	[AC_MSG_ERROR(XOpenDisplay not found in -lX11)]
+	)
+
+dnl Checks for Xextension
+PKG_CHECK_MODULES([XEXT], [xext],
+	[
+	AC_CHECK_LIB([Xext],
+		[XMissingExtension],
+		[],
+	        [AC_MSG_ERROR(XMissingExtension not found in -lXext)]
+		)
+	],
+	[AC_MSG_ERROR(xext not found)]
+	)
+
 dnl pkgconfig checks for blackbox library
 PKG_CHECK_MODULES(LIBBT, libbt)
-CXXFLAGS="$CXXFLAGS $LIBBT_CFLAGS"
-LIBS="$LIBS $LIBBT_LIBS"
+
+LIBS="$LIBS $LIBBT_LIBS $X_LIBS $X_PRE_LIBS $XEXT_LIBS"
 
 dnl generate the config header
 AM_CONFIG_HEADER(config.h) 
