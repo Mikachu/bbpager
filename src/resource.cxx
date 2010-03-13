@@ -19,6 +19,7 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
+#include <cstring>
 #include "resource.h"
 #include "blackboxstyle.h"
 

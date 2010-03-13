@@ -20,6 +20,7 @@
 //
 
 #include <string>
+#include <cstring>
 #include "Baseresource.h"
 #include <stdio.h>
 #include "Menu.hh"
