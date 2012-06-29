@@ -25,6 +25,9 @@
 #include <stdio.h>
 
 extern "C" {
+#ifdef HAVE_XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
 #include <X11/cursorfont.h>
 }
 
@@ -46,6 +49,7 @@ ToolWindow::ToolWindow(Configuration cml_options):
     current_desktop_nr = 0;
     wm_init = false;
     row_last = column_last = 0;
+    head_rect_checked = false;
 
     xa_wm_delete_window = XInternAtom(XDisplay(), "WM_DELETE_WINDOW", False);
 
@@ -81,6 +85,51 @@ ToolWindow::ToolWindow(Configuration cml_options):
     if (!wminterface->readActiveWindow(root_window, &active))
         cout << "Error: cannot get active window from Window Manager" << endl;
     focusWindow(active);
+}
+
+void ToolWindow::initHeadRect(void)
+{
+    if (head_rect_checked)
+        return;
+    head_rect_checked = true;
+
+    head_x = 0;
+    head_y = 0;
+    head_width = current_screen_info.width();
+    head_height = current_screen_info.height();
+
+#ifdef HAVE_XINERAMA
+    int head = config.headMonitor();
+    if (head >= 0) {
+        if (XineramaIsActive(XDisplay())) {
+            int nscreens = 0;
+            XineramaScreenInfo *screens =
+                XineramaQueryScreens(XDisplay(), &nscreens);
+            if (screens) {
+                if (head < nscreens) {
+                    head_x = screens[head].x_org;
+                    head_y = screens[head].y_org;
+                    head_width = screens[head].width;
+                    head_height = screens[head].height;
+                } else {
+                    fprintf(stderr,
+                            "Warning: -head %d requested, but only %d Xinerama "
+                            "screen(s) available, using full screen instead\n",
+                            head, nscreens);
+                }
+                XFree(screens);
+            } else {
+                fprintf(stderr,
+                        "Warning: -head given but XineramaQueryScreens failed, "
+                        "using full screen instead\n");
+            }
+        } else {
+            fprintf(stderr,
+                    "Warning: -head given but Xinerama is not active, "
+                    "using full screen instead\n");
+        }
+    }
+#endif
 }
 
 ToolWindow::~ToolWindow()

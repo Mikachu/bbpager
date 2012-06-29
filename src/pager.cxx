@@ -19,12 +19,15 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
+#include "config.h"
 #include "pager.h"
 
 extern "C" {
 #include <X11/cursorfont.h>
 }
 
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 
 using std::cout;
@@ -120,21 +123,26 @@ void PagerWindow::lower(void)
 
 void PagerWindow::calcGeometry()
 {
-    // Find the geometry of the original window that we're 
+    int x = bbtool->headX();
+    int y = bbtool->headY();
+    unsigned int width = bbtool->headWidth();
+    unsigned int height = bbtool->headHeight();
+
+    // Find the geometry of the original window that we're
     // representing in the pager.
     initWindowGeometry();
 
     // Find the scaling factors necessary to scale the
     // original window down to our pager window.
     double xdiv = static_cast<double>(bbtool->getResource()->desktopSize.width) /
-                  bbtool->getCurrentScreenInfo()->width();
+                  width;
     double ydiv = static_cast<double>(bbtool->getResource()->desktopSize.height) /
-                  bbtool->getCurrentScreenInfo()->height();
+                  height;
 
     // Find the position of the pager window by scaling the
     // original window position.
-    pager_x = (int)(window_x * xdiv);
-    pager_y = (int)(window_y * ydiv);
+    pager_x = (int)((window_x-x) * xdiv);
+    pager_y = (int)((window_y-y) * ydiv);
 
     // Set the unadjusted size of the pager window
     // by scaling the original window size.

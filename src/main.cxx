@@ -24,6 +24,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <cstdlib>
 #include <string>
 #include <cstring>
 #include <iostream>
@@ -34,6 +35,7 @@ Configuration::Configuration(int iargc, char **iargv)
 	withdrawn = false;
 	decorated = false;
 	shape = false;
+	head = -1;
 	_argc = iargc;
 	_argv = iargv;
 	app_name = iargv[0];
@@ -55,6 +57,7 @@ void Usage()
 	fprintf(stdout,"-h[elp]                   Display this help\n");
 	fprintf(stdout,"-geom[etry] <geometry>    Set geometry of window\n");
 	fprintf(stdout,"-d[ecorated]              Show 'normal' decorated window\n");
+	fprintf(stdout,"-head <monitor index>     Xinerama head to manage\n");
 	fprintf(stdout,"-w[ithdrawn]              Place bbtool in the Slit\n");
 //  disable shape, until we can get it working again
 //	fprintf(stdout,"-s[hape]                    Don't display groundplate\n");
@@ -68,19 +71,19 @@ int main(int argc,char **argv)
 
 	for(i = 1; i < argc; i++) {
 		if ((!strcmp(argv[i],"-display"))) {
-			if(++i==argc)  {
+			if (++i == argc) {
 				Usage();
 				exit(2);
 			}
 			options.setDisplayName(argv[i]);
 		} else if ((!strcmp(argv[i],"-config")) || (!strcmp(argv[i],"-c"))) {
-			if(++i==argc)  {
+			if (++i == argc) {
 				Usage();
 				exit(2);
 			}
 			options.setRcFilename(argv[i]);
 		} else if ((!strcmp(argv[i],"-bbconfig")) | (!strcmp(argv[i],"-b"))) {
-			if(++i==argc)  {
+			if (++i == argc) {
 				Usage();
 				exit(2);
 			}
@@ -93,13 +96,19 @@ int main(int argc,char **argv)
 			Usage();
 			exit(2);
 		} else if ((!strcmp(argv[i],"-geometry")) || (!strcmp(argv[i],"-geom"))) {
-			if(++i==argc)  {
+			if (++i == argc) {
 				Usage();
 				exit(2);
 			}
 			options.setGeometry(argv[i]);
-		}
-		else if ((!strcmp(argv[i],"-withdrawn")) || (!strcmp(argv[i],"-w"))) {
+		} else if (!strcmp(argv[i],"-head")) {
+			if (++i == argc) {
+				Usage();
+				exit(2);
+			}
+			options.setHeadMonitor(atoi(argv[i]));
+
+		} else if ((!strcmp(argv[i],"-withdrawn")) || (!strcmp(argv[i],"-w"))) {
 			options.setWithdrawn(true);
 			//      disable shape, until we can get it working again
 			//		} else if ((!strcmp(argv[i],"-shape")) || (!strcmp(argv[i],"-s"))) {

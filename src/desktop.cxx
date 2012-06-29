@@ -392,13 +392,15 @@ void DesktopWindow::buttonReleaseEvent(const XButtonEvent * const event)
                                                              (*it)->desktopId());
                 double xdiv =
                     static_cast<double>(bbtool->getResource()->desktopSize.width) /
-                    bbtool->getCurrentScreenInfo()->width();
+                    bbtool->headWidth();
                 double ydiv =
                     static_cast<double>(bbtool->getResource()->desktopSize.height) /
-                    bbtool->getCurrentScreenInfo()->height();
+                    bbtool->headHeight();
 
                 int x = static_cast<int>((move_x - (*it)->desktopX()) / xdiv);
                 int y = static_cast<int>((move_y - (*it)->desktopY()) / ydiv);
+                x += bbtool->headX();
+                y += bbtool->headY();
                 XMoveWindow(display,realWindow, x, y);
                 XUnmapWindow(display,grabbedWindow);
                 XDestroyWindow(display,grabbedWindow);

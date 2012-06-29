@@ -54,6 +54,9 @@ class Configuration
 		const std::string &geometry(void) { return _geometry; }
 		void setGeometry(std::string geo) { _geometry = geo; }
 
+		int headMonitor(void) { return head; }
+		void setHeadMonitor(int h) { head = h; }
+
 	private:
 		bool withdrawn;
 		bool decorated;
@@ -61,6 +64,7 @@ class Configuration
 		int _argc;
 		char **_argv;
 		std::string _geometry;
+		int head;
 
 		std::string rc_filename;
 		std::string blackbox_rc_filename;

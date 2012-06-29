@@ -18,7 +18,6 @@ AC_DEFUN(AC_SET_NODEBUG,
  test "$CXXFLAGS" = "" && CXXFLAGS="-O2 -Wall"
  test "$LDFLAGS" = "" && LDFLAGS="-s"
 ])
-      
 
 AC_ARG_ENABLE(debug,[  --enable-debug          create debugging code [default=no]],
 [
@@ -70,13 +69,22 @@ PKG_CHECK_MODULES([XEXT], [xext],
 	[AC_MSG_ERROR(xext not found)]
 	)
 
+dnl Checks for Xinerama extension (optional, enables -head)
+PKG_CHECK_MODULES([XINERAMA], [xinerama],
+	[
+	AC_DEFINE([HAVE_XINERAMA], [1], [Define if the Xinerama extension is available])
+	have_xinerama=yes
+	],
+	[have_xinerama=no]
+	)
+
 dnl pkgconfig checks for blackbox library
 PKG_CHECK_MODULES(LIBBT, libbt)
 
-LIBS="$LIBS $LIBBT_LIBS $X_LIBS $X_PRE_LIBS $XEXT_LIBS"
+LIBS="$LIBS $LIBBT_LIBS $X_LIBS $X_PRE_LIBS $XEXT_LIBS $XINERAMA_LIBS"
 
 dnl generate the config header
-AM_CONFIG_HEADER(config.h) 
+AM_CONFIG_HEADER(config.h)
 
 dnl Print results
 AC_MSG_RESULT([])
@@ -89,7 +97,7 @@ AC_MSG_RESULT([Building with '$LIBS' for linker flags.])
 AC_MSG_RESULT([])
 
 AC_OUTPUT(
-Makefile 
-src/Makefile 
-data/Makefile 
+Makefile
+src/Makefile
+data/Makefile
 )
