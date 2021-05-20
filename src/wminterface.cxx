@@ -53,6 +53,36 @@ void WMInterface::sendClientMessage(Window window, Atom atom, XID data, XID data
              False, mask, &e);
 }
 
+#if 0
+void WMInterface::updateWindowList(void)
+{
+    bt::EWMH::WindowList window_vect;
+    PagerWindow *pwindow;
+  
+    if (ewmh->readClientList(bbtool->getCurrentScreenInfo()->rootWindow(), window_vect)) {
+        /* delete any windows not in list */
+        std::list<PagerWindow *>::iterator pit = bbtool->pagerWindowList().begin();
+   
+        //bbtool->pagerWindowList().clear();
+        for (; pit != bbtool->pagerWindowList().end(); ) {
+            delete (*pit);
+            pit = bbtool->pagerWindowList().erase(pit);
+        }
+        /* add any new window windows */
+        bt::EWMH::WindowList::iterator it = window_vect.begin();
+        for (; it != window_vect.end(); it++) {
+            // skip myself
+            if ((*it) == bbtool->frameWindow()->window())
+            {
+                continue;
+            }
+            PagerWindow *pager_window = new PagerWindow(bbtool, *it);
+            bbtool->pagerWindowList().push_back(pager_window);
+        }
+
+    }
+}
+#else
 
 void WMInterface::updateWindowList(void)
 {
@@ -81,17 +111,18 @@ void WMInterface::updateWindowList(void)
         std::list<PagerWindow *>::iterator pit = bbtool->pagerWindowList().begin();
         std::list<PagerWindow *>::iterator pit_end = bbtool->pagerWindowList().end();
    
-        for (; pit != pit_end; pit++) {
+        for (; pit != pit_end; ) {
             if (!(*pit)->isMarked()) {
                 delete (*pit);
-                bbtool->pagerWindowList().erase(pit);
-                pit--;
+                pit = bbtool->pagerWindowList().erase(pit);
             } else {
+                pit++;
             }
         }
 
     }
 }
+#endif
 
 void WMInterface::updateWindowStack() 
 {
