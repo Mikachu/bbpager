@@ -482,11 +482,11 @@ void FrameWindow::calcSize(void)
 
 void FrameWindow::buttonPressEvent(const XButtonEvent * const event)
 {
-    if (event->button == LEFT_BUTTON) {
+    if (event->button == 1) {
         XRaiseWindow(display, win);
         lower = false;
     }
-    if (event->button == MIDDLE_BUTTON) {
+    if (event->button == 2) {
         XLowerWindow(display, win);
         lower = true;
     }

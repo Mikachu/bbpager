@@ -29,8 +29,6 @@
 class BaseResource;
 
 enum {none=0, border=1, texture=2};
-enum WHICH_BUTTON { INVALID_BUTTON = 0, LEFT_BUTTON, MIDDLE_BUTTON,
-					RIGHT_BUTTON, FOURTH_BUTTON, FIFTH_BUTTON};
 
 struct FRAME {
     int width;
@@ -85,10 +83,10 @@ public:
   int rows;
   int getFocusStyle(void) { return pager_focus_style; }
   int getDesktopFocusStyle(void) { return desktop_focus_style; }
-  WHICH_BUTTON getWindowMoveButton(void) { return window_move_button; }
-  WHICH_BUTTON getDesktopChangeButton(void) { return desktop_change_button; }
-  WHICH_BUTTON getWindowRaiseButton(void) { return window_raise_button; }
-  WHICH_BUTTON getWindowFocusButton(void) { return window_focus_button; }
+  unsigned int getWindowMoveButton(void) { return window_move_button; }
+  unsigned int getDesktopChangeButton(void) { return desktop_change_button; }
+  unsigned int getWindowRaiseButton(void) { return window_raise_button; }
+  unsigned int getWindowFocusButton(void) { return window_focus_button; }
 
 
     void clean(void);
@@ -101,10 +99,10 @@ private:
   void PagerWin(void);
   int pager_focus_style;
   int desktop_focus_style;
-  WHICH_BUTTON window_move_button;
-  WHICH_BUTTON desktop_change_button;
-  WHICH_BUTTON window_raise_button;
-  WHICH_BUTTON window_focus_button;
+  unsigned int window_move_button;
+  unsigned int desktop_change_button;
+  unsigned int window_raise_button;
+  unsigned int window_focus_button;
   void Clean(void);
 
   ToolWindow *bbtool;

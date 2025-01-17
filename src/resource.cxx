@@ -42,35 +42,18 @@ void Resource::clean()
 
 void Resource::load(void) 
 {
-    unsigned int button = 0;
-    WHICH_BUTTON move_default = LEFT_BUTTON;
+    unsigned int move_default = 1;
 
-    button = readUInt("bbpager.desktopChangeButton", "Bbpager.Desktopchangebutton", MIDDLE_BUTTON);
-    if (button > 5 || button < 1) {
-        button = MIDDLE_BUTTON;
-    }
-    desktop_change_button = static_cast<WHICH_BUTTON>(button);
-    if (desktop_change_button == LEFT_BUTTON) {
-        move_default = MIDDLE_BUTTON;
+    desktop_change_button = readUInt("bbpager.desktopChangeButton", "Bbpager.Desktopchangebutton", 2);
+    if (desktop_change_button == 1) {
+        move_default = 2;
     }
 
-    button = readUInt("bbpager.windowMoveButton", "Bbpager.WindowMovebutton", move_default);
-    if (button > 5 || button < 1) {
-        button = move_default;
-    }
-    window_move_button = static_cast<WHICH_BUTTON>(button);
+    window_move_button = readUInt("bbpager.windowMoveButton", "Bbpager.WindowMovebutton", 0);
 
-    button = readUInt("bbpager.windowFocusButton", "Bbpager.WindowFocusbutton", INVALID_BUTTON);
-    if (button > 5 || button < 1) {
-        button = INVALID_BUTTON;
-    }
-    window_focus_button = static_cast<WHICH_BUTTON>(button);
+    window_focus_button = readUInt("bbpager.windowFocusButton", "Bbpager.WindowFocusbutton", 2);
 
-    button = readUInt("bbpager.windowRaiseButton", "Bbpager.WindowRaisebutton", INVALID_BUTTON);
-    if (button > 5 || button < 1) {
-        button = INVALID_BUTTON;
-    }
-    window_raise_button = static_cast<WHICH_BUTTON>(button);
+    window_raise_button = readUInt("bbpager.windowRaiseButton", "Bbpager.WindowRaisebutton", 3);
 
     Frame();
  
