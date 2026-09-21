@@ -103,7 +103,6 @@ public:
  
     const bt::ScreenInfo *getCurrentScreenInfo(void) { return(&current_screen_info); }
 	Resource *resource;
-	int desktop_nr;
 
 	std::list<PagerWindow *> &pagerWindowList(void) { return(pager_window_list); }
 	std::list<DesktopWindow *> &desktopWindowList(void) { return(desktop_window_list); }

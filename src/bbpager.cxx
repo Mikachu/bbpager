@@ -44,7 +44,6 @@ ToolWindow::ToolWindow(Configuration cml_options):
     current_screen = DefaultScreen(XDisplay());
     root_window = current_screen_info.rootWindow();
     number_of_desktops = 0;
-    desktop_nr = 0;
     current_desktop_nr = 0;
     wm_init = false;
     row_last = column_last = 0;
@@ -126,7 +125,7 @@ void ToolWindow::moveWinToDesktop(Window win, DesktopWindow *desktop)
     PagerWindow *pager_window = findPagerWindow(win);
   
     if (pager_window != 0) {
-        if ((desktop->desktopId() != pager_window->desktopId()) & (!pager_window->isSticky())) {
+        if ((desktop->desktopId() != pager_window->desktopId()) && (!pager_window->isSticky())) {
 
             XUnmapWindow(XDisplay(), pager_window->window());
             XReparentWindow(XDisplay(), pager_window->window(),
@@ -188,8 +187,6 @@ void ToolWindow::reconfigure(void)
     resource = new Resource(this, config.blackboxRcFilename(), config.rcFilename());
     MakeWindow(true);
   
-    desktop_nr = 0;
-
     list<DesktopWindow *>::iterator dit = desktop_window_list.begin();
     for (; dit != desktop_window_list.end(); dit++) {
         (*dit)->reconfigure();
@@ -301,7 +298,6 @@ void ToolWindow::removeDesktopWindow(void)
     DesktopWindow *desktop_window = desktop_window_list.back();
     desktop_window_list.pop_back(); 
     delete desktop_window;
-    desktop_nr--;
     frame_window->resize();
 }
 

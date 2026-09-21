@@ -71,19 +71,19 @@ int main(int argc,char **argv)
 			if(++i==argc)  {
 				Usage();
 				exit(2);
-			};
+			}
 			options.setDisplayName(argv[i]);
-		} else if ((!strcmp(argv[i],"-config"))|(!strcmp(argv[i],"-c"))) {
+		} else if ((!strcmp(argv[i],"-config")) || (!strcmp(argv[i],"-c"))) {
 			if(++i==argc)  {
 				Usage();
 				exit(2);
-			};
+			}
 			options.setRcFilename(argv[i]);
-		} else if ((!strcmp(argv[i],"-bbconfig"))|(!strcmp(argv[i],"-b"))) {
+		} else if ((!strcmp(argv[i],"-bbconfig")) | (!strcmp(argv[i],"-b"))) {
 			if(++i==argc)  {
 				Usage();
 				exit(2);
-			};
+			}
 			options.setBlackboxRcFilename(argv[i]);
 
 		} else if ( (!strcmp(argv[i],"-v")) || (!strcmp(argv[i],"-version"))) {
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
 			if(++i==argc)  {
 				Usage();
 				exit(2);
-			};
+			}
 			options.setGeometry(argv[i]);
 		}
 		else if ((!strcmp(argv[i],"-withdrawn")) || (!strcmp(argv[i],"-w"))) {

@@ -126,7 +126,6 @@ void Resource::SizeAndPosition()
     else
         default_width = 64;
 
-    desktopSize.width = default_width;
     desktopSize.width = readUInt("bbpager.desktop.width", "Bbpager.Desktop.Width", default_width);
       
     int default_height;

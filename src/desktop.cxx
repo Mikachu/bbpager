@@ -103,7 +103,7 @@ void DesktopWindow::buildWindow(bool reconfigure)
     XClearWindow(display, bbtool->frameWindow()->window());
     XMapWindow(display, bbtool->frameWindow()->window());
     XMapSubwindows(display, bbtool->frameWindow()->window());
-    desktop_id = bbtool->desktop_nr++;
+    desktop_id = desktop_nr;
 }
 
 

@@ -186,17 +186,17 @@ int WMInterface::isIconicState(Window win)
 
 void WMInterface::changeNumberOfDesktops(int number_of_desktops) 
 {
-  int old_number_of_desktops = bbtool->getNumberOfDesktops();
-  bbtool->setNumberOfDesktops(number_of_desktops);
-  if (number_of_desktops > old_number_of_desktops) {
-  int i;
-  for (i=old_number_of_desktops;i<number_of_desktops;i++) {
-    bbtool->addDesktopWindow(i);
+    int old_number_of_desktops = bbtool->getNumberOfDesktops();
+    int i;
+    bbtool->setNumberOfDesktops(number_of_desktops);
+    if (number_of_desktops > old_number_of_desktops) {
+        for (i=old_number_of_desktops;i<number_of_desktops;i++)
+            bbtool->addDesktopWindow(i);
+    } else if (number_of_desktops<old_number_of_desktops) {
+        for (i = number_of_desktops; i < old_number_of_desktops; i++)
+            bbtool->removeDesktopWindow();
     }
-  } else if (number_of_desktops<old_number_of_desktops)
-    bbtool->removeDesktopWindow();
 }
-
 
 bool WMInterface::readActiveWindow(Window target, Window *active)
 {

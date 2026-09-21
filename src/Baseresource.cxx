@@ -120,7 +120,7 @@ int BaseResource::readInt(const std::string &rname, const std::string &rclass, i
 
 unsigned int BaseResource::readUInt(const std::string &rname, const std::string &rclass, unsigned int default_val)
 {
-    int ret_val;
+    unsigned int ret_val;
     std::string tmp = bt_resource.read(rname, rclass, "");
     if ((tmp.empty()) || (sscanf(tmp.c_str(), "%u", &ret_val) != 1))
     {
@@ -133,11 +133,13 @@ unsigned int BaseResource::readUInt(const std::string &rname, const std::string 
                     const std::string &alt_rname, const std::string &alt_rclass, 
                     unsigned int default_val)
 {
-    int ret_val;
+    unsigned int ret_val;
     std::string tmp = bt_resource.read(rname, rclass, "");
     if (tmp.empty()) {
-        std::string tmp = bt_resource.read(alt_rname, alt_rclass, "");
+        tmp = bt_resource.read(alt_rname, alt_rclass, "");
         if ((tmp.empty()) || (sscanf(tmp.c_str(), "%u", &ret_val) != 1))
+            return(default_val);
+    } else if (sscanf(tmp.c_str(), "%u", &ret_val) != 1) {
             return(default_val);
     }
     return(ret_val);
