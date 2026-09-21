@@ -21,51 +21,51 @@
 
 class Configuration
 {
-public:
-	Configuration(int iargc, char **argv);
-	~Configuration(void);
-	
-	int argc(void) { return _argc; }
-	char **argv(void) { return _argv; }
-	
-	bool isWithdrawn(void) { return withdrawn; }
-	void setWithdrawn(bool _withdrawn) { withdrawn = _withdrawn; }
+	public:
+		Configuration(int iargc, char **argv);
+		~Configuration(void);
 
-	bool isDecorated(void) { return decorated; }
-	void setDecorated(bool _decorated) { decorated = _decorated; }
+		int argc(void) { return _argc; }
+		char **argv(void) { return _argv; }
 
-	bool isShaped(void) { return shape; }
-	void setShaped(bool _shape) { shape = _shape; }
+		bool isWithdrawn(void) { return withdrawn; }
+		void setWithdrawn(bool _withdrawn) { withdrawn = _withdrawn; }
 
-	const std::string &rcFilename(void) { return rc_filename; }
-	void setRcFilename(std::string filename) { rc_filename = filename; }
+		bool isDecorated(void) { return decorated; }
+		void setDecorated(bool _decorated) { decorated = _decorated; }
 
-    const std::string &blackboxRcFilename(void) 
-        { return blackbox_rc_filename; }
-	void setBlackboxRcFilename(std::string filename) 
-        { blackbox_rc_filename = filename; }
+		bool isShaped(void) { return shape; }
+		void setShaped(bool _shape) { shape = _shape; }
 
-	const std::string &appName(void) { return app_name; }
-	void setAppName(std::string name) { app_name = name; }
+		const std::string &rcFilename(void) { return rc_filename; }
+		void setRcFilename(std::string filename) { rc_filename = filename; }
 
-	const std::string &displayName(void) { return display_name; }
-	void setDisplayName(std::string name) { display_name = name; }
+		const std::string &blackboxRcFilename(void)
+		{ return blackbox_rc_filename; }
+		void setBlackboxRcFilename(std::string filename)
+		{ blackbox_rc_filename = filename; }
 
-	const std::string &geometry(void) { return _geometry; }
-	void setGeometry(std::string geo) { _geometry = geo; }
-	
-private:
-	bool withdrawn;
-	bool decorated;
-	bool shape;
-	int _argc;
-	char **_argv;
-	std::string _geometry;
-	
-	std::string rc_filename;
-	std::string blackbox_rc_filename;
-	std::string app_name;
-	std::string display_name;
+		const std::string &appName(void) { return app_name; }
+		void setAppName(std::string name) { app_name = name; }
+
+		const std::string &displayName(void) { return display_name; }
+		void setDisplayName(std::string name) { display_name = name; }
+
+		const std::string &geometry(void) { return _geometry; }
+		void setGeometry(std::string geo) { _geometry = geo; }
+
+	private:
+		bool withdrawn;
+		bool decorated;
+		bool shape;
+		int _argc;
+		char **_argv;
+		std::string _geometry;
+
+		std::string rc_filename;
+		std::string blackbox_rc_filename;
+		std::string app_name;
+		std::string display_name;
 };
 
 #endif // __MAIN_H

@@ -24,33 +24,34 @@
 
 #include <stdio.h>
 
-WMInterface::WMInterface(ToolWindow *toolwindow) : 
+WMInterface::WMInterface(ToolWindow *toolwindow) :
     bt::EventHandler(), bbtool(toolwindow)
 {
     root_window = bbtool->getCurrentScreenInfo()->rootWindow();
-    XSelectInput(bbtool->XDisplay(), root_window, PropertyChangeMask); 
+    XSelectInput(bbtool->XDisplay(), root_window, PropertyChangeMask);
     bbtool->insertEventHandler(root_window, this);
     ewmh = bbtool->ewmh();
 }
 
-WMInterface::~WMInterface() 
+WMInterface::~WMInterface()
 {
 }
 
-void WMInterface::sendClientMessage(Window window, Atom atom, XID data, XID data1) {
-  XEvent e;
-  unsigned long mask;
+void WMInterface::sendClientMessage(Window window, Atom atom, XID data, XID data1)
+{
+    XEvent e;
+    unsigned long mask;
 
-  e.xclient.type = ClientMessage;
-  e.xclient.window = window; 
-  e.xclient.message_type = atom;
-  e.xclient.format = 32;
-  e.xclient.data.l[0] = (unsigned long) data;
-  e.xclient.data.l[1] = (unsigned long) data1;
-  mask =  SubstructureRedirectMask;
-  XSendEvent(bbtool->XDisplay(), 
-             root_window,
-             False, mask, &e);
+    e.xclient.type = ClientMessage;
+    e.xclient.window = window;
+    e.xclient.message_type = atom;
+    e.xclient.format = 32;
+    e.xclient.data.l[0] = (unsigned long) data;
+    e.xclient.data.l[1] = (unsigned long) data1;
+    mask =  SubstructureRedirectMask;
+    XSendEvent(bbtool->XDisplay(),
+               root_window,
+               False, mask, &e);
 }
 
 #if 0
@@ -58,11 +59,11 @@ void WMInterface::updateWindowList(void)
 {
     bt::EWMH::WindowList window_vect;
     PagerWindow *pwindow;
-  
+
     if (ewmh->readClientList(bbtool->getCurrentScreenInfo()->rootWindow(), window_vect)) {
         /* delete any windows not in list */
         std::list<PagerWindow *>::iterator pit = bbtool->pagerWindowList().begin();
-   
+
         //bbtool->pagerWindowList().clear();
         for (; pit != bbtool->pagerWindowList().end(); ) {
             delete (*pit);
@@ -88,7 +89,7 @@ void WMInterface::updateWindowList(void)
 {
     bt::EWMH::WindowList window_vect;
     PagerWindow *pwindow;
-  
+
     if (ewmh->readClientList(bbtool->getCurrentScreenInfo()->rootWindow(), window_vect)) {
         /* add any new window windows */
         bt::EWMH::WindowList::iterator it = window_vect.begin();
@@ -100,7 +101,7 @@ void WMInterface::updateWindowList(void)
                 continue;
             }
             pwindow = bbtool->findPagerWindow((*it));
-            if ( pwindow == NULL) { 
+            if ( pwindow == NULL) {
                 PagerWindow *pager_window = new PagerWindow(bbtool, *it);
                 bbtool->pagerWindowList().push_back(pager_window);
             } else {
@@ -110,7 +111,7 @@ void WMInterface::updateWindowList(void)
         /* delete any windows not in list */
         std::list<PagerWindow *>::iterator pit = bbtool->pagerWindowList().begin();
         std::list<PagerWindow *>::iterator pit_end = bbtool->pagerWindowList().end();
-   
+
         for (; pit != pit_end; ) {
             if (!(*pit)->isMarked()) {
                 delete (*pit);
@@ -124,7 +125,7 @@ void WMInterface::updateWindowList(void)
 }
 #endif
 
-void WMInterface::updateWindowStack() 
+void WMInterface::updateWindowStack()
 {
     bt::EWMH::WindowList window_vect;
     if (ewmh->readClientListStacking(bbtool->getCurrentScreenInfo()->rootWindow(), window_vect)) {
@@ -136,31 +137,28 @@ void WMInterface::updateWindowStack()
             pwindow = bbtool->findPagerWindow((*it));
             if ( pwindow == NULL) continue;
             pwindow->raise();
-        }    
+        }
     }
 }
 
-
-void WMInterface::changeDesktop(int desk_number) 
+void WMInterface::changeDesktop(int desk_number)
 {
 
     sendClientMessage(root_window, ewmh->currentDesktop(), desk_number);
 }
 
-
-void WMInterface::sendWindowToDesktop(Window win,int desk_number) 
+void WMInterface::sendWindowToDesktop(Window win,int desk_number)
 {
     sendClientMessage(win, ewmh->wmDesktop(), desk_number);
 }
 
-void WMInterface::setWindowFocus(Window win, Time time) 
+void WMInterface::setWindowFocus(Window win, Time time)
 {
     //ewmh->setActiveWindow(root_window, win);
     sendClientMessage(win, ewmh->activeWindow(), 2, time);
-
 }
 
-int WMInterface::isIconicState(Window win) 
+int WMInterface::isIconicState(Window win)
 {
     Atom real_type;
     int format;
@@ -169,22 +167,22 @@ int WMInterface::isIconicState(Window win)
     long *p=0;
     int result = -1;
 
-    status = XGetWindowProperty(bbtool->XDisplay(), win, 
-                              bbtool->wmStateAtom(), 0L, 1L,
-                              False, bbtool->wmStateAtom(), &real_type,
-                              &format, &n, &extra,  (unsigned char**)&p);
+    status = XGetWindowProperty(bbtool->XDisplay(), win,
+                                bbtool->wmStateAtom(), 0L, 1L,
+                                False, bbtool->wmStateAtom(), &real_type,
+                                &format, &n, &extra,  (unsigned char**)&p);
     if (!status) {
         if (p) {
             result = (p[0]==IconicState) ? 1 : 0;
             XFree(p);
-        } else 
+        } else
             result = 0;
     }
 
     return(result);
 }
 
-void WMInterface::changeNumberOfDesktops(int number_of_desktops) 
+void WMInterface::changeNumberOfDesktops(int number_of_desktops)
 {
     int old_number_of_desktops = bbtool->getNumberOfDesktops();
     int i;
@@ -200,19 +198,19 @@ void WMInterface::changeNumberOfDesktops(int number_of_desktops)
 
 bool WMInterface::readActiveWindow(Window target, Window *active)
 {
-  unsigned char* data = NULL;
-  if (ewmh->getProperty(target, XA_WINDOW, ewmh->activeWindow(), &data)) {
-    *active = * (reinterpret_cast<Window *>(data));
-    XFree(data);
-    return True;
-  }
-  return False;
+    unsigned char* data = NULL;
+    if (ewmh->getProperty(target, XA_WINDOW, ewmh->activeWindow(), &data)) {
+        *active = * (reinterpret_cast<Window *>(data));
+        XFree(data);
+        return True;
+    }
+    return False;
 }
 
 //property notify events, send to root window.
 void WMInterface::propertyNotifyEvent(const XPropertyEvent * const event)
 {
-     if (event->atom == ewmh->clientList()) {
+    if (event->atom == ewmh->clientList()) {
         updateWindowList();
     } else if (event->atom == ewmh->clientListStacking()) {
         updateWindowStack();
@@ -237,15 +235,15 @@ void WMInterface::propertyNotifyEvent(const XPropertyEvent * const event)
             fprintf(stderr, "Error: Cannot read active window\n");
         } else {
             bbtool->focusWindow(active);
-        }            
+        }
     } else if (event->atom == ewmh->workarea()) {
 
     } else {
         // ignore
     }
 
-   
-    
+
+
     //wminterface->windowAttributeChange(event->xproperty.window);
 }
 

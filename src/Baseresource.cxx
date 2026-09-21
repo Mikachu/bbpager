@@ -25,7 +25,9 @@
 #include <stdio.h>
 #include "Menu.hh"
 
-BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const std::string &blackbox_rc_filename, const std::string &filename) : 
+BaseResource::BaseResource(bt::Application &_app, unsigned int _screen,
+                           const std::string &blackbox_rc_filename,
+                           const std::string &filename) :
     app(_app), display(_app.display())
 {
     const bt::ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
@@ -40,8 +42,8 @@ BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const st
     {
         bt_resource.load(std::string("~/.blackboxrc"));
     }
-    
-    if (bt_resource.valid()) 
+
+    if (bt_resource.valid())
     {
         const std::string blackbox_stylefile = bt_resource.read("session.styleFile", "Session.StyleFile", "");
 
@@ -53,10 +55,10 @@ BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const st
 
         if (image_dither &&
             screeninfo.visual()->c_class == TrueColor &&
-                screeninfo.depth() >= 24)
+            screeninfo.depth() >= 24)
             image_dither = false;
 
-        if (!blackbox_stylefile.empty()) 
+        if (!blackbox_stylefile.empty())
         {
             bt_resource.load(blackbox_stylefile);
         }
@@ -69,7 +71,7 @@ BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const st
                 use_default = false;
             }
         }
-        
+
         if (use_default) {
             if (!bt_resource.merge(std::string(BBTOOL_LOCAL))) {
                 if (!bt_resource.merge(std::string(BBTOOL_GLOBAL))) {
@@ -89,7 +91,7 @@ BaseResource::BaseResource(bt::Application &_app, unsigned int _screen, const st
 
 BaseResource::~BaseResource()
 {
-  
+
 }
 
 std::string BaseResource::readString(const std::string &rname, const std::string &rclass, const std::string &default_val)
@@ -98,8 +100,8 @@ std::string BaseResource::readString(const std::string &rname, const std::string
 }
 
 std::string BaseResource::readString(const std::string &rname, const std::string &rclass,
-                     const std::string &alt_rname, const std::string &alt_rclass,
-                     const std::string &default_val)
+                                     const std::string &alt_rname, const std::string &alt_rclass,
+                                     const std::string &default_val)
 {
     std::string tmp = bt_resource.read(rname, rclass, "");
     if (tmp.empty())
@@ -112,9 +114,7 @@ int BaseResource::readInt(const std::string &rname, const std::string &rclass, i
     int ret_val;
     std::string tmp = bt_resource.read(rname, rclass, "0");
     if ((tmp.empty()) || (sscanf(tmp.c_str(), "%d", &ret_val) != 1))
-    {
         return(default_val);
-    }
     return(ret_val);
 }
 
@@ -123,15 +123,13 @@ unsigned int BaseResource::readUInt(const std::string &rname, const std::string 
     unsigned int ret_val;
     std::string tmp = bt_resource.read(rname, rclass, "");
     if ((tmp.empty()) || (sscanf(tmp.c_str(), "%u", &ret_val) != 1))
-    {
         return(default_val);
-    }
     return(ret_val);
 }
 
-unsigned int BaseResource::readUInt(const std::string &rname, const std::string &rclass, 
-                    const std::string &alt_rname, const std::string &alt_rclass, 
-                    unsigned int default_val)
+unsigned int BaseResource::readUInt(const std::string &rname, const std::string &rclass,
+                                    const std::string &alt_rname, const std::string &alt_rclass,
+                                    unsigned int default_val)
 {
     unsigned int ret_val;
     std::string tmp = bt_resource.read(rname, rclass, "");
@@ -140,7 +138,7 @@ unsigned int BaseResource::readUInt(const std::string &rname, const std::string 
         if ((tmp.empty()) || (sscanf(tmp.c_str(), "%u", &ret_val) != 1))
             return(default_val);
     } else if (sscanf(tmp.c_str(), "%u", &ret_val) != 1) {
-            return(default_val);
+        return(default_val);
     }
     return(ret_val);
 }
@@ -148,8 +146,8 @@ unsigned int BaseResource::readUInt(const std::string &rname, const std::string 
 bool BaseResource::readBool(const std::string &rname, const std::string &rclass, bool default_val)
 {
     std::string tmp = bt_resource.read(rname, rclass, "");
-    if (!strcasecmp(tmp.c_str(),"true")) 
-        return(true); 
+    if (!strcasecmp(tmp.c_str(),"true"))
+        return(true);
     if (!strcasecmp(tmp.c_str(),"false"))
         return(false);
 
@@ -157,7 +155,7 @@ bool BaseResource::readBool(const std::string &rname, const std::string &rclass,
 }
 
 bt::Color BaseResource::readColor(const std::string &rname,const std::string &rclass,
-                              const std::string &default_color)
+                                  const std::string &default_color)
 {
     std::string rcolor = bt_resource.read(rname, rclass, default_color);
     bt::Color color;
@@ -167,67 +165,64 @@ bt::Color BaseResource::readColor(const std::string &rname,const std::string &rc
 
 
 bt::Color BaseResource::readColor(const std::string &rname,const std::string &rclass,
-                  const std::string &alt_rname, const std::string &alt_rclass,
-                              const std::string &default_color)
+                                  const std::string &alt_rname, const std::string &alt_rclass,
+                                  const std::string &default_color)
 {
     std::string rcolor = bt_resource.read(rname, rclass, "");
-    if (rcolor.empty()) {
+    if (rcolor.empty())
         rcolor = bt_resource.read(alt_rname, alt_rclass, default_color);
-    }
     bt::Color color;
     color = bt::Color::namedColor(display, screen, rcolor);
     return(color);
 }
 
-bt::Texture BaseResource::readTexture(const std::string &rname, 
-                      const std::string &rclass,
-                      const std::string &default_texture,
-                      const std::string &default_color,
-                      const std::string &default_colorTo)
+bt::Texture BaseResource::readTexture(const std::string &rname,
+                                      const std::string &rclass,
+                                      const std::string &default_texture,
+                                      const std::string &default_color,
+                                      const std::string &default_colorTo)
 {
-  bt::Texture dtexture;
-  dtexture.setDescription(default_texture);
-  dtexture.setColor1( bt::Color::namedColor(display, screen, default_color) );
-  dtexture.setColor2( bt::Color::namedColor(display, screen, default_colorTo) );
+    bt::Texture dtexture;
+    dtexture.setDescription(default_texture);
+    dtexture.setColor1( bt::Color::namedColor(display, screen, default_color) );
+    dtexture.setColor2( bt::Color::namedColor(display, screen, default_colorTo) );
 
-  return bt::textureResource(display, screen, bt_resource, rname, rclass, dtexture);
+    return bt::textureResource(display, screen, bt_resource, rname, rclass, dtexture);
 }
 
 
-bt::Texture BaseResource::readTexture(const std::string &rname, 
-                      const std::string &rclass,
-                      const std::string &alt_rname,
-                      const std::string &alt_rclass,
-                      const std::string &default_texture,
-                      const std::string &default_color,
-                      const std::string &default_colorTo)
+bt::Texture BaseResource::readTexture(const std::string &rname,
+                                      const std::string &rclass,
+                                      const std::string &alt_rname,
+                                      const std::string &alt_rclass,
+                                      const std::string &default_texture,
+                                      const std::string &default_color,
+                                      const std::string &default_colorTo)
 
 {
-  bt::Texture dtexture;
-  dtexture.setDescription(default_texture);
-  dtexture.setColor1( bt::Color::namedColor(display, screen, default_color) );
-  dtexture.setColor2( bt::Color::namedColor(display, screen, default_colorTo) );
+    bt::Texture dtexture;
+    dtexture.setDescription(default_texture);
+    dtexture.setColor1( bt::Color::namedColor(display, screen, default_color) );
+    dtexture.setColor2( bt::Color::namedColor(display, screen, default_colorTo) );
 
-  std::string rtexture = bt_resource.read(rname, rclass, 
-                                          bt_resource.read(rname + ".appearance",
-                                                           rclass + "Appearance", ""));
+    std::string rtexture = bt_resource.read(rname, rclass,
+                                            bt_resource.read(rname + ".appearance",
+                                                             rclass + "Appearance", ""));
 
-  bt::Texture texture;
+    bt::Texture texture;
 
-  if (!rtexture.empty()) {
-    texture = bt::textureResource(display, screen, bt_resource, rname, rclass, dtexture);
-  }
-  else {
-    texture = bt::textureResource(display, screen, bt_resource, alt_rname, alt_rclass, dtexture);
-  }
+    if (!rtexture.empty())
+        texture = bt::textureResource(display, screen, bt_resource, rname, rclass, dtexture);
+    else
+        texture = bt::textureResource(display, screen, bt_resource, alt_rname, alt_rclass, dtexture);
 
-  return texture;
+    return texture;
 }
 
-bt::Font BaseResource::readFont(const std::string &rname, 
-                const std::string &rclass,
-                const std::string &alt_rname,
-                const std::string &alt_rclass)
+bt::Font BaseResource::readFont(const std::string &rname,
+                                const std::string &rclass,
+                                const std::string &alt_rname,
+                                const std::string &alt_rclass)
 {
     std::string font_name = bt_resource.read(rname, rclass, "");
     if (font_name.empty()) {

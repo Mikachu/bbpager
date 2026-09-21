@@ -23,70 +23,63 @@
 #include "resource.h"
 #include "blackboxstyle.h"
 
-Resource::Resource(ToolWindow *toolwindow, const std::string &blackbox_rc_file, const std::string &rc_file): 
+Resource::Resource(ToolWindow *toolwindow, const std::string &blackbox_rc_file, const std::string &rc_file):
         BaseResource(*toolwindow, toolwindow->getCurrentScreen(), blackbox_rc_file, rc_file), bbtool(toolwindow)
 {
     load();
 }
 
-Resource::~Resource() 
+Resource::~Resource()
 {
     clean();
 }
 
-void Resource::clean() 
+void Resource::clean()
 {
 }
 
-
-
-void Resource::load(void) 
+void Resource::load(void)
 {
     unsigned int move_default = 1;
 
     desktop_change_button = readUInt("bbpager.desktopChangeButton", "Bbpager.Desktopchangebutton", 2);
-    if (desktop_change_button == 1) {
+    if (desktop_change_button == 1)
         move_default = 2;
-    }
 
     window_move_button = readUInt("bbpager.windowMoveButton", "Bbpager.WindowMovebutton", 0);
-
     window_focus_button = readUInt("bbpager.windowFocusButton", "Bbpager.WindowFocusbutton", 2);
-
     window_raise_button = readUInt("bbpager.windowRaiseButton", "Bbpager.WindowRaisebutton", 3);
 
     Frame();
- 
     SizeAndPosition();
-
     PagerWin();
 }
 
-
-void Resource::Frame() 
+void Resource::Frame()
 {
-    frame.texture = readTexture("bbpager.frame","BbPager.Frame",BB_FRAME, BB_C_FRAME,
-                    "Raised Gradient Vertical", "slategrey","darkslategrey");
+    frame.texture = readTexture("bbpager.frame", "BbPager.Frame",BB_FRAME, BB_C_FRAME,
+                                "Raised Gradient Vertical", "slategrey", "darkslategrey");
 
-    frame.bevelWidth = readUInt("bbpager.bevelWidth","Bbpager.BevelWidth", 
-                                readUInt( "bbpager.margin","Bbpager.margin", 4));
-    frame.desktopMargin = readUInt("bbpager.desktop.bevelWidth","Bbpager.desktop.BevelWidth", 
-                                readUInt( "bbpager.desktop.margin","Bbpager.desktop.margin", frame.bevelWidth));
+    frame.bevelWidth = readUInt("bbpager.bevelWidth", "Bbpager.BevelWidth",
+                                readUInt("bbpager.margin", "Bbpager.margin", 4));
+    frame.desktopMargin = readUInt("bbpager.desktop.bevelWidth", "Bbpager.desktop.BevelWidth",
+                                   readUInt("bbpager.desktop.margin", "Bbpager.desktop.margin",
+                                            frame.bevelWidth));
 }
 
 
-void Resource::SizeAndPosition() 
+void Resource::SizeAndPosition()
 {
     unsigned int w, h;
 
-    if (!(bbtool->configuration().isWithdrawn())) 
+    if (!(bbtool->configuration().isWithdrawn()))
         bbtool->configuration().setWithdrawn(readBool("bbpager.withdrawn", "Bbpager.Withdrawn", false));
 
-    if (!(bbtool->configuration().isShaped())) 
+    if (!(bbtool->configuration().isShaped()))
         bbtool->configuration().setShaped(readBool("bbpager.shape", "Bbpager.Shape", false /*bbtool->configuration().isWithdrawn() */));
 
     if (bbtool->configuration().geometry().empty()) {
-        std::string positionstring = readString("bbpager.position","Bbpager.Position", "-0-0");
+        std::string positionstring = readString("bbpager.position", "Bbpager.Position", "-0-0");
         position.mask = XParseGeometry(positionstring.c_str(), &position.x, &position.y, &w, &h);
         if (!(position.mask & XValue))
             position.x = 0;
@@ -103,23 +96,21 @@ void Resource::SizeAndPosition()
 
     position.horizontal = false;
     position.vertical = false;
-    std::string orientation = readString( "bbpager.desktop.orientation", "Bbpager.Desktop.Orientation", "horizontal");
+    std::string orientation = readString("bbpager.desktop.orientation", "Bbpager.Desktop.Orientation", "horizontal");
 
-    if (orientation == "vertical") {
-       position.vertical = true;
-    } else {
-            position.horizontal = true;
-    }   
-
+    if (orientation == "vertical")
+        position.vertical = true;
+    else
+        position.horizontal = true;
 
     columns = readUInt("bbpager.desktop.columns", "Bbpager.Desktop.Columns", 0xFFFF);
-    if (columns == 0) 
-      columns = 0xFFFF;
+    if (columns == 0)
+        columns = 0xFFFF;
 
-    rows = readUInt("bbpager.desktop.rows","Bbpager.Desktop.Rows", 0XFFFF);
-    if (rows == 0) 
+    rows = readUInt("bbpager.desktop.rows", "Bbpager.Desktop.Rows", 0XFFFF);
+    if (rows == 0)
         rows = 0xFFFF;
-  
+
     int default_width;
     if (!bbtool->configuration().isWithdrawn())
         default_width = 40;
@@ -127,7 +118,7 @@ void Resource::SizeAndPosition()
         default_width = 64;
 
     desktopSize.width = readUInt("bbpager.desktop.width", "Bbpager.Desktop.Width", default_width);
-      
+
     int default_height;
     if (!bbtool->configuration().isWithdrawn())
         default_height = 30;
@@ -137,7 +128,7 @@ void Resource::SizeAndPosition()
     desktopSize.height = readUInt("bbpager.desktop.height", "Bbpager.Desktop.Height", default_height);
 }
 
-void Resource::PagerWin() 
+void Resource::PagerWin()
 {
     std::string focus_style;
 
@@ -145,20 +136,20 @@ void Resource::PagerWin()
 
     if (strcasecmp("texture", focus_style.c_str()) == 0) {
         desktop_focus_style = texture;
-    } else if (! strcasecmp("none", focus_style.c_str())) 
+    } else if (! strcasecmp("none", focus_style.c_str()))
         desktop_focus_style = none;
-    else 
+    else
         desktop_focus_style = border;
-  
+
           desktopwin.texture = readTexture("bbpager.desktop", "Bbpager.Desktop",
                                            BB_LABEL,BB_C_LABEL,
                                            "Sunken Gradient Diagonal",
-                     "slategrey","darkslategrey");
+                     "slategrey", "darkslategrey");
 
     if (desktop_focus_style == texture) {
         desktopwin.focusedTexture = readTexture("bbpager.desktop.focus", "Bbpager.Desktop.Focus",
                                "Sunken Gradient Diagonal",
-                               "darkslategrey","slategrey");
+                               "darkslategrey", "slategrey");
         }
 
         // Set the borders for active (focused) and inactive (unfocused) desktops.
@@ -212,29 +203,27 @@ void Resource::PagerWin()
                                            default_desktop_active_width);
         }
 
-        
-
-    std::string window_focus_style = readString("bbpager.window.focusStyle", "Bbpager.Window.FocusStyle", 
+    std::string window_focus_style = readString("bbpager.window.focusStyle", "Bbpager.Window.FocusStyle",
                             "texture");
-    
+
     if (! strcasecmp("border", window_focus_style.c_str()))
         pager_focus_style = border;
-    else if (! strcasecmp("none", window_focus_style.c_str())) 
+    else if (! strcasecmp("none", window_focus_style.c_str()))
         pager_focus_style = none;
-    else 
+    else
         pager_focus_style = texture;
 
 
           pagerwin.texture = readTexture("bbpager.window", "Bbpager.Window",
                                          BB_WINDOW_UNFOCUS, BB_C_WINDOW_UNFOCUS,
                                          "Raised Gradient Diagonal",
-                       "rgb:c/9/6","rgb:8/6/4");
+                       "rgb:c/9/6", "rgb:8/6/4");
 
     if (pager_focus_style == texture) {
-        pagerwin.focusedTexture = readTexture("bbpager.window.focus","Bbpager.Window.Focus",
+        pagerwin.focusedTexture = readTexture("bbpager.window.focus", "Bbpager.Window.Focus",
                                BB_WINDOW_FOCUS,BB_C_WINDOW_FOCUS,
                               "Raised Vertical Gradient",
-                              "rgb:c/9/6","rgb:8/6/4");
+                              "rgb:c/9/6", "rgb:8/6/4");
         }
 
         // Set the borders for active (focused) and inactive (unfocused) windows.

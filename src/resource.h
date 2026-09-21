@@ -40,71 +40,71 @@ struct FRAME {
 };
 
 struct POSITION {
-  int x;
-  int y;
-  int mask;
-  bool vertical;
-  bool horizontal;
+    int x;
+    int y;
+    int mask;
+    bool vertical;
+    bool horizontal;
 };
 
 struct SIZE {
-  unsigned int width;
-  unsigned int height;
+    unsigned int width;
+    unsigned int height;
 };
 
 struct REPORT {
-  bool auto_raise;
+    bool auto_raise;
 };
 
 struct BBPAGERWIN {
-  bt::Texture texture;
-  bt::Texture focusedTexture;
-  bt::Color activeColor;
-  int activeWidth;
-  bt::Color inactiveColor;
-  int inactiveWidth;
+    bt::Texture texture;
+    bt::Texture focusedTexture;
+    bt::Color activeColor;
+    int activeWidth;
+    bt::Color inactiveColor;
+    int inactiveWidth;
 };
 
 class ToolWindow;
 
 class Resource : public BaseResource {
 
-public:
-  Resource(ToolWindow *toolwindow, const std::string &blackbox_rc_file, const std::string &rc_file);
-  ~Resource(void);
+    public:
+        Resource(ToolWindow *toolwindow, const std::string &blackbox_rc_file, const std::string &rc_file);
+        ~Resource(void);
 
-  struct FRAME frame;
-  struct POSITION position;
-  struct SIZE desktopSize;
-  struct REPORT report;
-  struct BBPAGERWIN pagerwin;
-  struct BBPAGERWIN desktopwin;
-  int columns;
-  int rows;
-  int getFocusStyle(void) { return pager_focus_style; }
-  int getDesktopFocusStyle(void) { return desktop_focus_style; }
-  unsigned int getWindowMoveButton(void) { return window_move_button; }
-  unsigned int getDesktopChangeButton(void) { return desktop_change_button; }
-  unsigned int getWindowRaiseButton(void) { return window_raise_button; }
-  unsigned int getWindowFocusButton(void) { return window_focus_button; }
-
-
-    void clean(void);
-    void load(void); 
+        struct FRAME frame;
+        struct POSITION position;
+        struct SIZE desktopSize;
+        struct REPORT report;
+        struct BBPAGERWIN pagerwin;
+        struct BBPAGERWIN desktopwin;
+        int columns;
+        int rows;
+        int getFocusStyle(void) { return pager_focus_style; }
+        int getDesktopFocusStyle(void) { return desktop_focus_style; }
+        unsigned int getWindowMoveButton(void) { return window_move_button; }
+        unsigned int getDesktopChangeButton(void) { return desktop_change_button; }
+        unsigned int getWindowRaiseButton(void) { return window_raise_button; }
+        unsigned int getWindowFocusButton(void) { return window_focus_button; }
 
 
-private:
-  void Frame(void);
-  void SizeAndPosition(void);
-  void PagerWin(void);
-  int pager_focus_style;
-  int desktop_focus_style;
-  unsigned int window_move_button;
-  unsigned int desktop_change_button;
-  unsigned int window_raise_button;
-  unsigned int window_focus_button;
-  void Clean(void);
+        void clean(void);
+        void load(void);
 
-  ToolWindow *bbtool;
+
+    private:
+        void Frame(void);
+        void SizeAndPosition(void);
+        void PagerWin(void);
+        int pager_focus_style;
+        int desktop_focus_style;
+        unsigned int window_move_button;
+        unsigned int desktop_change_button;
+        unsigned int window_raise_button;
+        unsigned int window_focus_button;
+        void Clean(void);
+
+        ToolWindow *bbtool;
 };
 #endif /* __RESOURCE_HH */

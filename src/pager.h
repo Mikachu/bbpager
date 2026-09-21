@@ -27,18 +27,18 @@
 
 class DesktopWindow;
 
-class PagerWindow : public bt::EventHandler 
+class PagerWindow : public bt::EventHandler
 {
-	
-public:
-	PagerWindow(ToolWindow *toolwindow, Window _win);		
+
+    public:
+	PagerWindow(ToolWindow *toolwindow, Window _win);
 	~PagerWindow(void);
- 
-    Window window(void);
-    Window window(int desktop);
+
+	Window window(void);
+	Window window(int desktop);
 
 	Window realWindow(void) { return win; }
-	
+
 	int initWindowGeometry(void);
 	void reconfigure(void);
 	void buildWindow(bool reconfigure);
@@ -47,44 +47,44 @@ public:
 	void clearFocus(void);
 
 	unsigned int desktopId(void) { return desktop_id; }
-    void setDesktopId(unsigned int id) { desktop_id = id; }
+	void setDesktopId(unsigned int id) { desktop_id = id; }
 
-    bool isSticky(void) { return(sticky); }
-    void setSticky(bool val) { sticky = val; }
+	bool isSticky(void) { return(sticky); }
+	void setSticky(bool val) { sticky = val; }
 
-    bool isFocused(void) { return(focused); }
-    bool isShaded(void) { return(shaded); }
-    bool isSkipped(void) { return(skip); }
+	bool isFocused(void) { return(focused); }
+	bool isShaded(void) { return(shaded); }
+	bool isSkipped(void) { return(skip); }
 
-    int x() { return pager_x; }
-    int y() { return pager_y; }
+	int x() { return pager_x; }
+	int y() { return pager_y; }
 
-    //void width(int w) { pager_width = w; }
-    //void height(int h) { pager_height = h; }
-    int width(void) { return focused ? pager_focus_width : pager_unfocus_width; }
-    int height(void) { return focused ? pager_focus_height : pager_unfocus_height; }
+	//void width(int w) { pager_width = w; }
+	//void height(int h) { pager_height = h; }
+	int width(void) { return focused ? pager_focus_width : pager_unfocus_width; }
+	int height(void) { return focused ? pager_focus_height : pager_unfocus_height; }
 
-    bool isMarked(void) { bool tmp = marked; marked = false; return(tmp); } 
-    void mark(bool val) { marked = val; }
-    void configureNotifyEvent(const XConfigureEvent * const event);
-    void propertyNotifyEvent(const XPropertyEvent * const event);
-    void exposeEvent(const XExposeEvent * const event);
-    
-    void raise(void);
-    void lower(void);
-    void redraw(void);
+	bool isMarked(void) { bool tmp = marked; marked = false; return(tmp); }
+	void mark(bool val) { marked = val; }
+	void configureNotifyEvent(const XConfigureEvent * const event);
+	void propertyNotifyEvent(const XPropertyEvent * const event);
+	void exposeEvent(const XExposeEvent * const event);
 
-    Pixmap getPixmap(void) { return(pixmap); }
-    Pixmap getFocusedPixmap(void) { return(pixmap_focused); }
-    
-    bt::Texture getTexture(void);
-    bt::Texture getFocusedTexture(void);
-    
-private:
-    ToolWindow *bbtool;
-    bt::EWMH *ewmh;
-    int screen;
-    ::Display *display;
+	void raise(void);
+	void lower(void);
+	void redraw(void);
+
+	Pixmap getPixmap(void) { return(pixmap); }
+	Pixmap getFocusedPixmap(void) { return(pixmap_focused); }
+
+	bt::Texture getTexture(void);
+	bt::Texture getFocusedTexture(void);
+
+    private:
+	ToolWindow *bbtool;
+	bt::EWMH *ewmh;
+	int screen;
+	::Display *display;
 	Window win;
 	Window *pwin;
 
@@ -96,14 +96,14 @@ private:
 	unsigned int window_width;
 	unsigned int window_height;
 
-    unsigned int desktop_id;
-	
+	unsigned int desktop_id;
+
 	bool hidden;
-    bool iconic;
+	bool iconic;
 	bool focused;
 	bool shaded;
-    bool marked;
-    bool skip;
+	bool marked;
+	bool skip;
 
 	int pager_x;
 	int pager_y;
@@ -113,15 +113,15 @@ private:
 	int pager_unfocus_height;
 	unsigned int desktop_nr;
 	bool sticky;
-    unsigned int number_of_desktops;
+	unsigned int number_of_desktops;
 
-    void buildPagerWindow(bool reconfigure, unsigned int nr);
-    void showWindow();
-    void hideWindow();
-    void destroyWindow();
-    void calcGeometry();
+	void buildPagerWindow(bool reconfigure, unsigned int nr);
+	void showWindow();
+	void hideWindow();
+	void destroyWindow();
+	void calcGeometry();
 
-    DesktopWindow *m_pDesktop;
+	DesktopWindow *m_pDesktop;
 };
 
 #endif // __PAGER_H

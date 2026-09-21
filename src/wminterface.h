@@ -31,7 +31,7 @@ class ToolWindow;
 struct WindowList;
 
 
-class WMInterface : public bt::EventHandler 
+class WMInterface : public bt::EventHandler
 {
     public:
         WMInterface(ToolWindow *);
@@ -50,7 +50,7 @@ class WMInterface : public bt::EventHandler
         void changeDesktop(int);
         void updateWindowList(void);
         void updateWindowStack(void);
-        
+
         void changeNumberOfDesktops(int number_of_desktops);
         bool readActiveWindow(Window target, Window *active);
         void processClientEvents(XEvent Event);

@@ -101,19 +101,19 @@ int main(int argc,char **argv)
 		}
 		else if ((!strcmp(argv[i],"-withdrawn")) || (!strcmp(argv[i],"-w"))) {
 			options.setWithdrawn(true);
-//      disable shape, until we can get it working again
-//		} else if ((!strcmp(argv[i],"-shape")) || (!strcmp(argv[i],"-s"))) {
-//			options.setShaped(true);
+			//      disable shape, until we can get it working again
+			//		} else if ((!strcmp(argv[i],"-shape")) || (!strcmp(argv[i],"-s"))) {
+			//			options.setShaped(true);
 		} else if ((!strcmp(argv[i],"-decorated")) || (!strcmp(argv[i],"-d"))) {
 			options.setDecorated(true);
 		}
 	}
-    try {
-    	ToolWindow bbpager(options);
-	    bbpager.run();
-    }
-    catch (std::string &error)
-    {
-        std::cerr << error << "\n";
-    }
+	try {
+		ToolWindow bbpager(options);
+		bbpager.run();
+	}
+	catch (std::string &error)
+	{
+		std::cerr << error << "\n";
+	}
 }

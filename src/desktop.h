@@ -29,63 +29,63 @@ class PagerWindow;
 
 class DesktopWindow : public bt::EventHandler
 {
-public:
+    public:
 	DesktopWindow(ToolWindow *toolwindow, unsigned int _desktop_nr);
 	~DesktopWindow(void);
 
 	Window window(void) { return win; }
 
-    unsigned int desktopId(void) { return desktop_id; }
+	unsigned int desktopId(void) { return desktop_id; }
 
 	void reconfigure(void);
 	void buildWindow(bool reconfigure);
 
-        bool focused(void) { return m_focused; }
+	bool focused(void) { return m_focused; }
 	void setFocus(void);
 	void clearFocus(void);
 
-    int windowX(void) { return(_window_x); }
-    int windowY(void) { return(_window_y); }
-    int windowWidth(void) { return(_window_width); }
-    int windowHeight(void) { return(_window_height); }
+	int windowX(void) { return(_window_x); }
+	int windowY(void) { return(_window_y); }
+	int windowWidth(void) { return(_window_width); }
+	int windowHeight(void) { return(_window_height); }
 
-    int desktopX(void) { return(_desktop_x); }
-    int desktopY(void) { return(_desktop_y); }
-    int desktopWidth(void) { return(_desktop_width); }
-    int desktopHeight(void) { return(_desktop_height); }
+	int desktopX(void) { return(_desktop_x); }
+	int desktopY(void) { return(_desktop_y); }
+	int desktopWidth(void) { return(_desktop_width); }
+	int desktopHeight(void) { return(_desktop_height); }
 
-    void redraw(void);
-	
-    virtual void buttonPressEvent(const XButtonEvent * const event);
-    virtual void buttonReleaseEvent(const XButtonEvent * const event);
-    virtual void motionNotifyEvent(const XMotionEvent * const event);
-    virtual void exposeEvent(const XExposeEvent * const event);
-    Pixmap pixmap(void) { return m_pixmap; }
-    
-private:
+	void redraw(void);
+
+	virtual void buttonPressEvent(const XButtonEvent * const event);
+	virtual void buttonReleaseEvent(const XButtonEvent * const event);
+	virtual void motionNotifyEvent(const XMotionEvent * const event);
+	virtual void exposeEvent(const XExposeEvent * const event);
+	Pixmap pixmap(void) { return m_pixmap; }
+
+    private:
 	Window win;
-    Window grabbedWindow;
-    PagerWindow *moveWindow;
-    Window realWindow;
-    Window pagerWindow;
+	Window grabbedWindow;
+	PagerWindow *moveWindow;
+	Window realWindow;
+	Window pagerWindow;
 
-    int grabbed_x;
-    int grabbed_y;
-    int move_x;
-    int move_y;
-    bool moved;
+	int grabbed_x;
+	int grabbed_y;
+	int move_x;
+	int move_y;
+	bool moved;
 
-    int screen;
+	int screen;
 	::Display *display;
 
-    ToolWindow *bbtool;
+	ToolWindow *bbtool;
 
-    bool m_focused;
+	bool m_focused;
 	Pixmap m_pixmap;
 	Pixmap m_pixmapFocused;
-	
 
-    unsigned int desktop_id;
+
+	unsigned int desktop_id;
 	int _cell_x;
 	int _cell_y;
 	int _cell_width;
@@ -98,9 +98,9 @@ private:
 	int _desktop_y;
 	int _desktop_width;
 	int _desktop_height;
-    unsigned int desktop_nr;
-   
-    void calcGeometry(void);
+	unsigned int desktop_nr;
+
+	void calcGeometry(void);
 };
 
 #endif // __DESKTOP_H

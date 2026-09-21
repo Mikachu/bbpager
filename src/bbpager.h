@@ -52,56 +52,56 @@ class DesktopWindow;
 
 class FrameWindow : public bt::EventHandler
 {
-public:
+    public:
 	FrameWindow(ToolWindow *toolwindow);
 	~FrameWindow(void);
 
 	Window window(void) { return win; }
-    void resize(void);
-    void buildWindow(bool reconfigure);
-    int x(void) { return(fx); }
-    int y(void) { return(fy); }
-    void x(int val) { fx = val; }
-    void y(int val) { fy = val; }
-    void setXY(int x, int y) { fx = x; fy = y; }
+	void resize(void);
+	void buildWindow(bool reconfigure);
+	int x(void) { return(fx); }
+	int y(void) { return(fy); }
+	void x(int val) { fx = val; }
+	void y(int val) { fy = val; }
+	void setXY(int x, int y) { fx = x; fy = y; }
 
-    // message handlers
-    virtual void buttonPressEvent(const XButtonEvent * const event);
-    virtual void configureNotifyEvent(const XConfigureEvent * const event);
-    virtual void clientMessageEvent(const XClientMessageEvent * const event);
-    virtual void exposeEvent(const XExposeEvent * const event);
-    Pixmap pixmap(void) { return m_pixmap; }
-    unsigned int width(void) {return fwidth; }
-    unsigned int height(void) { return fheight; }
-private:
+	// message handlers
+	virtual void buttonPressEvent(const XButtonEvent * const event);
+	virtual void configureNotifyEvent(const XConfigureEvent * const event);
+	virtual void clientMessageEvent(const XClientMessageEvent * const event);
+	virtual void exposeEvent(const XExposeEvent * const event);
+	Pixmap pixmap(void) { return m_pixmap; }
+	unsigned int width(void) {return fwidth; }
+	unsigned int height(void) { return fheight; }
+    private:
 	Window win;
-    ToolWindow *bbtool;
+	ToolWindow *bbtool;
 	Pixmap m_pixmap;
-    int screen;
-    ::Display *display;
-    int fx;
-    int fy;
-    int ldx;
-    int ldy;
-    unsigned int fwidth;
-    unsigned int fheight;
+	int screen;
+	::Display *display;
+	int fx;
+	int fy;
+	int ldx;
+	int ldy;
+	unsigned int fwidth;
+	unsigned int fheight;
 
-    int current_column;
-    unsigned int current_row;
+	int current_column;
+	unsigned int current_row;
 	bool lower;
-    
-    void calcSize(void);
+
+	void calcSize(void);
 
 
 };
 
 class ToolWindow : public bt::Application {
 
-public:
+    public:
 	ToolWindow(Configuration options);
 	~ToolWindow(void);
- 
-    const bt::ScreenInfo *getCurrentScreenInfo(void) { return(&current_screen_info); }
+
+	const bt::ScreenInfo *getCurrentScreenInfo(void) { return(&current_screen_info); }
 	Resource *resource;
 
 	std::list<PagerWindow *> &pagerWindowList(void) { return(pager_window_list); }
@@ -120,18 +120,18 @@ public:
 	void lowerWindow(Window);
 	void focusWindow(Window);
 	void desktopChange(unsigned int desktop_nr);
-    DesktopWindow *findDesktopWindow(unsigned int desktop_nr);
-    DesktopWindow *findDesktopWindow(Window win);
+	DesktopWindow *findDesktopWindow(unsigned int desktop_nr);
+	DesktopWindow *findDesktopWindow(Window win);
 	int winOnDesktop(Window);
 	bool isIcon(Window);
-  
-	void changeWinDesktop(Window,int);
-    void moveWinToDesktop(Window win, DesktopWindow *desktop);
-    void moveWinToDesktop(PagerWindow *pager_window, unsigned int desktop_nr);
 
-    PagerWindow *findPagerWindow(Window win);
-    PagerWindow *findPPagerWindow(Window win);
-    PagerWindow *findFocusedPagerWindow();
+	void changeWinDesktop(Window,int);
+	void moveWinToDesktop(Window win, DesktopWindow *desktop);
+	void moveWinToDesktop(PagerWindow *pager_window, unsigned int desktop_nr);
+
+	PagerWindow *findPagerWindow(Window win);
+	PagerWindow *findPPagerWindow(Window win);
+	PagerWindow *findFocusedPagerWindow();
 
 	int getCurrentDesktopNr(void) { return(current_desktop_nr); }
 	int getNumberOfDesktops(void) { return(number_of_desktops); }
@@ -140,25 +140,25 @@ public:
 	void setBlackboxInit(void) { wm_init = true; }
 	Resource *getResource(void) { return resource; }
 	int getCurrentScreen(void) { return current_screen; }
-    FrameWindow *frameWindow(void) { return frame_window; }
+	FrameWindow *frameWindow(void) { return frame_window; }
 
-    Configuration &configuration(void) { return(config); }
+	Configuration &configuration(void) { return(config); }
 
 
-    unsigned int numberOfDesktops(void) { return(number_of_desktops); }
-    Atom &wmDeleteWindowAtom(void) { return(xa_wm_delete_window); }
-    Atom &wmStateAtom(void) { return(xa_wm_state); }
+	unsigned int numberOfDesktops(void) { return(number_of_desktops); }
+	Atom &wmDeleteWindowAtom(void) { return(xa_wm_delete_window); }
+	Atom &wmStateAtom(void) { return(xa_wm_state); }
 
-    void addDesktopWindow(unsigned int nr);
-   
+	void addDesktopWindow(unsigned int nr);
+
 	WMInterface *wminterface;
-    
-    virtual void shutdown(void);
-    bt::EWMH *ewmh(void) { return _ewmh; }
-   
-    Window root_window;
+
+	virtual void shutdown(void);
+	bt::EWMH *ewmh(void) { return _ewmh; }
+
+	Window root_window;
 	std::list<PagerWindow *> pager_window_list;
-private:
+    private:
 
 	std::list<DesktopWindow *> desktop_window_list;
 
@@ -168,16 +168,16 @@ private:
 	char **iargv;
 	int iargc;
 	int row_last,column_last;
-	
-    bt::EWMH *_ewmh;
-    
-    Atom xa_wm_delete_window;
-    Atom xa_wm_state;
+
+	bt::EWMH *_ewmh;
+
+	Atom xa_wm_delete_window;
+	Atom xa_wm_state;
 	const bt::ScreenInfo &current_screen_info;
 	int current_screen;
 
-    FrameWindow *frame_window;
-    Configuration &config;
+	FrameWindow *frame_window;
+	Configuration &config;
 };
 
 #endif // __BBPAGER_H

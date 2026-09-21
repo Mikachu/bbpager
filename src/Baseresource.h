@@ -33,10 +33,10 @@ class BaseResource
 {
 
 	public:
-		BaseResource(bt::Application &_app, 
-                     unsigned int _screen, 
-                     const std::string &blackbox_rc_filename, 
-                     const std::string &filename);
+		BaseResource(bt::Application &_app,
+					 unsigned int _screen,
+					 const std::string &blackbox_rc_filename,
+					 const std::string &filename);
 
 		virtual ~BaseResource(void);
 
@@ -44,49 +44,49 @@ class BaseResource
 	protected:
 		std::string readString(const std::string &rname, const std::string &rclass, const std::string &default_val);
 		std::string readString(const std::string &rname, const std::string &rclass,
-				       const std::string &alt_rname, const std::string &alt_rclass,
-				       const std::string &default_val);
+							   const std::string &alt_rname, const std::string &alt_rclass,
+							   const std::string &default_val);
 
 		int readInt(const std::string &rname, const std::string &rclass, int default_val);
 		unsigned int readUInt(const std::string &rname, const std::string &rclass, unsigned int default_val);
 		unsigned int readUInt(const std::string &rname, const std::string &rclass,
-				      const std::string &alt_rname, const std::string &alt_rclass,
-				      unsigned int default_val);
-	
+							  const std::string &alt_rname, const std::string &alt_rclass,
+							  unsigned int default_val);
+
 		bool readBool(const std::string &rname, const std::string &rclass, bool default_val);
 		bt::Color readColor(const std::string &rname,const std::string &rclass,
-	                             	  const std::string &default_color);
+							const std::string &default_color);
 		bt::Color readColor(const std::string &rname,const std::string &rclass,
-				    const std::string &alt_rname, const std::string &alt_rclass,
-	                            const std::string &default_color);
-		bt::Texture readTexture(const std::string &rname, 
-					const std::string &rclass,
-				       	const std::string &default_texture,
-				 	const std::string &default_color,
-				 	const std::string &default_colorTo);
-		bt::Texture readTexture(const std::string &rname, 
-					const std::string &rclass,
-					const std::string &alt_rname,
-					const std::string &alt_rclass,
-				       	const std::string &default_texture,
-				 	const std::string &default_color,
-				 	const std::string &default_colorTo);
-		bt::Font readFont(const std::string &rname, 
-				  const std::string &rclass,
-				  const std::string &alt_rname,
-				  const std::string &alt_rclass);
+							const std::string &alt_rname, const std::string &alt_rclass,
+							const std::string &default_color);
+		bt::Texture readTexture(const std::string &rname,
+								const std::string &rclass,
+								const std::string &default_texture,
+								const std::string &default_color,
+								const std::string &default_colorTo);
+		bt::Texture readTexture(const std::string &rname,
+								const std::string &rclass,
+								const std::string &alt_rname,
+								const std::string &alt_rclass,
+								const std::string &default_texture,
+								const std::string &default_color,
+								const std::string &default_colorTo);
+		bt::Font readFont(const std::string &rname,
+						  const std::string &rclass,
+						  const std::string &alt_rname,
+						  const std::string &alt_rclass);
 		std::string getColorName(const bt::Color &color);
 
 		void loadMenuStyle(void);
-		
-private:
-	bt::Resource bt_resource;
-	bt::Application &app;
-	unsigned int screen;
-	const bt::Display &display;
 
-	int colors_per_channel;
-	bool image_dither;
+	private:
+		bt::Resource bt_resource;
+		bt::Application &app;
+		unsigned int screen;
+		const bt::Display &display;
+
+		int colors_per_channel;
+		bool image_dither;
 };
 
 #endif /* __BASERESOURCE_HH */
