@@ -84,11 +84,7 @@ PagerWindow::~PagerWindow(void)
 {
     unsigned int i;
     bbtool->removeEventHandler(win);
-    for (i = 0; i < number_of_desktops; i++)
-    {
-        bbtool->removeEventHandler(pwin[i]) ;
-        XDestroyWindow(display, pwin[i]);  
-    }
+    destroyWindow();
     delete [] pwin;
     if (pixmap) bt::PixmapCache::release(pixmap);
     if (pixmap_focused && bbtool->getResource()->getFocusStyle() == texture) 
@@ -233,15 +229,7 @@ void PagerWindow::buildWindow(bool reconfigure)
     {
         if (number_of_desktops != 1)
         {
-            // Don't destroy windows on desktops > actual desktops,
-            // these windows are/will be detroyed by destroying desktop window.
-            for (i = 0; 
-                 i < number_of_desktops && 
-                 i < static_cast<unsigned int>(bbtool->getNumberOfDesktops()); 
-                 i++) 
-            {
-                XDestroyWindow(display, pwin[i]);
-            }
+            destroyWindow();
             number_of_desktops = 1;
             delete [] pwin;
             pwin = new Window[number_of_desktops];
@@ -254,15 +242,7 @@ void PagerWindow::buildWindow(bool reconfigure)
         if (number_of_desktops != 
                 static_cast<unsigned int>(bbtool->getNumberOfDesktops())) 
         {
-            // Don't destroy windows on desktops > actual desktops,
-            // these windows are/will be detroyed by destroying desktop window.
-            for (i = 0; 
-                 i < number_of_desktops && 
-                 i < static_cast<unsigned int>(bbtool->getNumberOfDesktops()); 
-                 i++) 
-            {  
-                XDestroyWindow(display, pwin[i]);
-            }
+            destroyWindow();
             number_of_desktops = bbtool->getNumberOfDesktops();
             delete [] pwin;
             pwin = new Window[number_of_desktops];
@@ -300,7 +280,11 @@ void PagerWindow::destroyWindow()
     unsigned int i;
     for (i = 0; i < number_of_desktops; i++) 
     {
-        XDestroyWindow(display, pwin[i]);
+        bbtool->removeEventHandler(pwin[i]);  
+        // Don't destroy windows on desktops > actual desktops,
+        // these windows are/will be destroyed by destroying desktop window.
+        if (i < static_cast<unsigned int>(bbtool->getNumberOfDesktops()))
+            XDestroyWindow(display, pwin[i]);
     }
 }
 
