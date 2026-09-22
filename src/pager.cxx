@@ -123,10 +123,11 @@ void PagerWindow::lower(void)
 
 void PagerWindow::calcGeometry()
 {
-    int x = bbtool->headX();
-    int y = bbtool->headY();
-    unsigned int width = bbtool->headWidth();
-    unsigned int height = bbtool->headHeight();
+    const bt::Rect &head = bbtool->getCurrentHead();
+    int x = head.x();
+    int y = head.y();
+    unsigned int width  = head.width();
+    unsigned int height = head.height();
 
     // Find the geometry of the original window that we're
     // representing in the pager.

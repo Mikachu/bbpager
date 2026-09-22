@@ -387,20 +387,22 @@ void DesktopWindow::buttonReleaseEvent(const XButtonEvent * const event)
             }
             if (it != bbtool->desktopWindowList().end())
             {
+                const bt::Rect &head = bbtool->getCurrentHead();
+
                 if (!moveWindow->isSticky())
                     bbtool->wminterface->sendWindowToDesktop(realWindow,
                                                              (*it)->desktopId());
                 double xdiv =
                     static_cast<double>(bbtool->getResource()->desktopSize.width) /
-                    bbtool->headWidth();
+                    head.width();
                 double ydiv =
                     static_cast<double>(bbtool->getResource()->desktopSize.height) /
-                    bbtool->headHeight();
+                    head.height();
 
                 int x = static_cast<int>((move_x - (*it)->desktopX()) / xdiv);
                 int y = static_cast<int>((move_y - (*it)->desktopY()) / ydiv);
-                x += bbtool->headX();
-                y += bbtool->headY();
+                x += head.x();
+                y += head.y();
                 XMoveWindow(display,realWindow, x, y);
                 XUnmapWindow(display,grabbedWindow);
                 XDestroyWindow(display,grabbedWindow);

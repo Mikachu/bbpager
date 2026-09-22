@@ -29,6 +29,7 @@
 #include "Util.hh"
 
 #include <X11/Xlib.h>
+#include <vector>
 
 namespace bt {
 
@@ -63,6 +64,7 @@ namespace bt {
     unsigned int _screennumber;
     std::string _displaystring;
     Rect _rect;
+    std::vector<Rect> _head_rects;
 
   public:
     ScreenInfo(Display& d, unsigned int num);
@@ -89,6 +91,13 @@ namespace bt {
     { return _rect.width(); }
     inline unsigned int height(void) const
     { return _rect.height(); }
+
+    // Xinerama head geometry, if available. headCount() == 0 if
+    // Xinerama is not active/available.
+    inline unsigned int headCount(void) const
+    { return _head_rects.size(); }
+    // returns rect() if 'head' is out of range or Xinerama isn't active
+    const Rect &headRect(int head) const;
 
     inline const std::string& displayString(void) const
     { return _displaystring; }

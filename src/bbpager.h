@@ -102,12 +102,10 @@ class ToolWindow : public bt::Application {
 	~ToolWindow(void);
 
 	const bt::ScreenInfo *getCurrentScreenInfo(void) { return(&current_screen_info); }
+	inline const bt::Rect &getCurrentHead(void) {
+	    return(current_screen_info.headRect(config.headMonitor()));
+	}
 	Resource *resource;
-
-	int headX(void) { initHeadRect(); return head_x; }
-	int headY(void) { initHeadRect(); return head_y; }
-	unsigned int headWidth(void) { initHeadRect(); return head_width; }
-	unsigned int headHeight(void) { initHeadRect(); return head_height; }
 
 	std::list<PagerWindow *> &pagerWindowList(void) { return(pager_window_list); }
 	std::list<DesktopWindow *> &desktopWindowList(void) { return(desktop_window_list); }
@@ -180,11 +178,6 @@ class ToolWindow : public bt::Application {
 	Atom xa_wm_state;
 	const bt::ScreenInfo &current_screen_info;
 	int current_screen;
-
-	bool head_rect_checked;
-	int head_x, head_y;
-	unsigned int head_width, head_height;
-	void initHeadRect(void);
 
 	FrameWindow *frame_window;
 	Configuration &config;

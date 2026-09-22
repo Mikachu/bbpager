@@ -27,6 +27,9 @@
 #include <algorithm>
 
 #include <X11/Xutil.h>
+#ifdef HAVE_XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
 
 #include <assert.h>
 #include <fcntl.h>
@@ -126,6 +129,20 @@ bt::ScreenInfo::ScreenInfo(bt::Display& d, unsigned int num)
                 HeightOfScreen(ScreenOfDisplay(_display.XDisplay(),
                                                _screennumber)));
 
+#ifdef HAVE_XINERAMA
+  if (XineramaIsActive(_display.XDisplay())) {
+    int nscreens = 0;
+    XineramaScreenInfo *screens = XineramaQueryScreens(_display.XDisplay(), &nscreens);
+    if (screens) {
+      _head_rects.reserve(nscreens);
+      for (int i = 0; i < nscreens; ++i)
+        _head_rects.push_back(Rect(screens[i].x_org, screens[i].y_org,
+                                   screens[i].width, screens[i].height));
+      XFree(screens);
+    }
+  }
+#endif
+
   /*
     If the default depth is at least 8 we will use that,
     otherwise we try to find the largest TrueColor visual.
@@ -180,4 +197,10 @@ bt::ScreenInfo::ScreenInfo(bt::Display& d, unsigned int num)
 
   _displaystring = std::string("DISPLAY=") + default_string + '.' +
                    bt::itostring(_screennumber);
+}
+
+const bt::Rect &bt::ScreenInfo::headRect(int head) const {
+  if (head < 0 || static_cast<unsigned int>(head) >= _head_rects.size())
+    return _rect;
+  return _head_rects[head];
 }
