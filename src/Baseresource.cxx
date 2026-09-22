@@ -23,7 +23,6 @@
 #include <cstring>
 #include "Baseresource.h"
 #include <stdio.h>
-#include "Menu.hh"
 
 BaseResource::BaseResource(bt::Application &_app, unsigned int _screen,
                            const std::string &blackbox_rc_filename,
@@ -218,25 +217,6 @@ bt::Texture BaseResource::readTexture(const std::string &rname,
 
     return texture;
 }
-
-bt::Font BaseResource::readFont(const std::string &rname,
-                                const std::string &rclass,
-                                const std::string &alt_rname,
-                                const std::string &alt_rclass)
-{
-    std::string font_name = bt_resource.read(rname, rclass, "");
-    if (font_name.empty()) {
-        font_name = bt_resource.read(alt_rname, alt_rclass, "");
-    }
-    bt::Font font(font_name);
-    return(font);
-}
-
-void BaseResource::loadMenuStyle(void)
-{
-    bt::MenuStyle::get(app, screen)->load(bt_resource);
-}
-
 
 std::string BaseResource::getColorName(const bt::Color &color)
 {

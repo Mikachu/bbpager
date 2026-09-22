@@ -22,7 +22,6 @@
 #ifndef __BASERESOURCE_HH
 #define __BASERESOURCE_HH
 
-#include "Font.hh"
 #include "Resource.hh"
 #include "Color.hh"
 #include "Texture.hh"
@@ -71,13 +70,7 @@ class BaseResource
 								const std::string &default_texture,
 								const std::string &default_color,
 								const std::string &default_colorTo);
-		bt::Font readFont(const std::string &rname,
-						  const std::string &rclass,
-						  const std::string &alt_rname,
-						  const std::string &alt_rclass);
 		std::string getColorName(const bt::Color &color);
-
-		void loadMenuStyle(void);
 
 	private:
 		bt::Resource bt_resource;

@@ -34,6 +34,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CPP
 AC_PROG_INSTALL
+AC_PROG_RANLIB
 AC_HEADER_STDC
 AC_CHECK_HEADERS(ctype.h fcntl.h libgen.h locale.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/stat.h sys/time.h sys/types.h sys/wait.h)
 AC_HEADER_TIME
@@ -78,10 +79,7 @@ PKG_CHECK_MODULES([XINERAMA], [xinerama],
 	[have_xinerama=no]
 	)
 
-dnl pkgconfig checks for blackbox library
-PKG_CHECK_MODULES(LIBBT, libbt)
-
-LIBS="$LIBS $LIBBT_LIBS $X_LIBS $X_PRE_LIBS $XEXT_LIBS $XINERAMA_LIBS"
+LIBS="$LIBS $X_LIBS $X_PRE_LIBS $XEXT_LIBS $XINERAMA_LIBS"
 
 dnl generate the config header
 AM_CONFIG_HEADER(config.h)
@@ -98,6 +96,7 @@ AC_MSG_RESULT([])
 
 AC_OUTPUT(
 Makefile
+lib/Makefile
 src/Makefile
 data/Makefile
 )

@@ -1,4 +1,4 @@
-SUBDIRS = src data 
+SUBDIRS = lib src data
 #man_MANS = bbpager.1
 #bin_PROGRAMS = bbmail
 EXTRA_DIST = BUGS TODO

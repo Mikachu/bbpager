@@ -1,7 +1,7 @@
 #!/bin/sh
 
-aclocal
-autoheader
-automake --foreign -a -c 
-autoconf
+aclocal || exit 1
+autoheader || exit 1
+automake --foreign -a -c  || exit 1
+autoconf || exit 1
 
